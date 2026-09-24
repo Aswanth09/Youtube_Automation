@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from schemas import ProjectPlan
 
@@ -17,6 +17,7 @@ from schemas import ProjectPlan
 class SceneAssets(BaseModel):
     audio_path: Optional[str] = None
     duration: Optional[float] = None
+    broll_paths: list[str] = Field(default_factory=list)
     broll_path: Optional[str] = None
     rendered_scene_path: Optional[str] = None
 

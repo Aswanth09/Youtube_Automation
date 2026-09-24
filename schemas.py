@@ -71,7 +71,6 @@ class Scene(BaseModel):
             return [str(x) for x in v]
         return ["business", "office"]
 
-
 class VideoMetadata(BaseModel):
     youtube_title: str = Field(..., max_length=150)
     youtube_description_base: str

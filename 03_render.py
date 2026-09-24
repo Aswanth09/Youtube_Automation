@@ -39,14 +39,20 @@ def main() -> None:
         if not (
             state.scene_assets.get(s.scene_id)
             and state.scene_assets[s.scene_id].audio_path
-            and state.scene_assets[s.scene_id].broll_path
+            and (
+                state.scene_assets[s.scene_id].broll_paths
+                or state.scene_assets[s.scene_id].broll_path
+            )
         )
     ]
     if missing:
         raise RuntimeError(f"Scenes missing resolved assets: {missing}. Run 02_assets.py first.")
 
     audio_data = {sid: (Path(sa.audio_path), sa.duration) for sid, sa in state.scene_assets.items()}
-    broll_paths = {sid: Path(sa.broll_path) for sid, sa in state.scene_assets.items()}
+    broll_paths = {
+        sid: [Path(path) for path in (sa.broll_paths or [sa.broll_path]) if path]
+        for sid, sa in state.scene_assets.items()
+    }
 
     scene_count = min(2, len(state.plan.scenes)) if args.preview else len(state.plan.scenes)
     log.info("Rendering %d scene(s) (preview=%s, encoder=%s)...", scene_count, args.preview, SETTINGS.video_encoder)

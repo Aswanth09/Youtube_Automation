@@ -191,7 +191,12 @@ def _register_usage(conn: sqlite3.Connection, video_id: str, clip_id: str) -> No
     conn.commit()
 
 
-def resolve_all_broll(video_id: str, scenes: list, dest_dir: Path) -> dict[int, Path]:
+def resolve_all_broll(
+    video_id: str,
+    scenes: list,
+    dest_dir: Path,
+    durations: dict[int, float | None] | None = None,
+) -> dict[int, list[Path]]:
     """Sequential resolution phase for every scene in one video build.
     Downloads land in the CALLING project's raw_footage dir; a clip
     reused later from the local cache may physically live in a different
@@ -200,12 +205,17 @@ def resolve_all_broll(video_id: str, scenes: list, dest_dir: Path) -> dict[int, 
     cross-project."""
     init_db()
     used_this_video: set[str] = set()
-    paths: dict[int, Path] = {}
+    paths: dict[int, list[Path]] = {}
 
     for scene in scenes:
-        path = resolve_clip_for_scene(video_id, scene.broll_keywords, used_this_video, dest_dir)
-        used_this_video.add(path.stem)
-        paths[scene.scene_id] = path
-        log.info("Scene %d -> %s", scene.scene_id, path.name)
+        duration = (durations or {}).get(scene.scene_id)
+        clip_count = 2 if duration is not None and duration > 8 else 1
+        scene_paths: list[Path] = []
+        for _ in range(clip_count):
+            path = resolve_clip_for_scene(video_id, scene.broll_keywords, used_this_video, dest_dir)
+            used_this_video.add(path.stem)
+            scene_paths.append(path)
+        paths[scene.scene_id] = scene_paths
+        log.info("Scene %d -> %s", scene.scene_id, ", ".join(path.name for path in scene_paths))
 
     return paths

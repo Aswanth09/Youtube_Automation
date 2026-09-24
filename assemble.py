@@ -146,7 +146,7 @@ def concat_scenes(scene_files: list[Path], out_path: Path) -> Path:
         list_path = f.name
 
     subprocess.run(
-        ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", list_path, "-c", "copy", str(out_path)],
+        [FFMPEG_BIN, "-y", "-f", "concat", "-safe", "0", "-i", list_path, "-c", "copy", str(out_path)],
         check=True, capture_output=True, text=True, timeout=120,
     )
     return out_path
@@ -155,7 +155,7 @@ def concat_scenes(scene_files: list[Path], out_path: Path) -> Path:
 def add_music_bed(concat_path: Path, music_bed_path: Path, final_out_path: Path) -> Path:
     subprocess.run(
         [
-            "ffmpeg", "-y",
+            FFMPEG_BIN, "-y",
             "-i", str(concat_path),
             "-stream_loop", "-1", "-i", str(music_bed_path),
             "-filter_complex", DUCK_FILTER,

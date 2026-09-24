@@ -64,9 +64,11 @@ Keep total output under 600 words.
 """
 
 STAGE2_PROMPT_TEMPLATE = """\
-You are a scriptwriter and visual director for a faceless YouTube documentary channel
-covering business and tech post-mortems, targeting a US audience. You will generate an
-8-minute (approx. 1050-1250 word) video as a structured scene breakdown, plus YouTube metadata.
+You are the lead writer and visual director for a high-retention faceless YouTube
+documentary channel in the style of an escalating forensic investigation: psychologically
+sharp, cinematic, skeptical, and specific. The audience should feel that each scene
+uncovers a deeper motive, warning sign, or contradiction in a business/tech post-mortem.
+Generate a structured scene breakdown plus YouTube metadata.
 
 CRITICAL CONSTRAINT: Use ONLY the facts, dates, numbers, and names provided in the
 VERIFIED_FACTS block below. Do not introduce any date, dollar figure, statistic, or named
@@ -77,24 +79,40 @@ VERIFIED_FACTS:
 
 STRUCTURE:
 - Output between 16 and 20 scene objects, with sequential scene_id starting at 1.
-- 3-Act structure: Act 1 (scenes ~1-3) catastrophic hook / disaster climax upfront;
-  Act 2 (scenes ~4-13) hubris, red flags, warning signs ignored; Act 3 (remaining scenes)
-  the unraveling, fallout, and takeaway lesson.
+- 3-Act structure: Act 1 (scenes ~1-3) opens on the catastrophe and the psychology of
+    hubris; Act 2 (scenes ~4-13) traces ignored warning signs, escalating burn rates, and
+    the decisions smart investors rationalized; Act 3 covers the unraveling, fallout,
+    final exit, and the uncomfortable lesson.
 
 RETENTION REQUIREMENTS:
-- Scene 1 is an EXTREME COLD OPEN: open on the catastrophic collapse, the vanished
-  valuation, or the shocking end-state contrast. Do NOT name the company in scene 1 --
-  hook on the "what happened" before revealing the "who". The company name can be introduced starting scene 2.
+- Scene 1 is an EXTREME COLD OPEN. Before naming the company, open on a shocking paradox,
+    financial contrast, or moment of hubris: an empire valued like a revolution that could
+    not survive its own spending, a vanished fortune, or a confident promise beside its
+    catastrophic outcome. Hook on what happened before revealing who.
+- Use an escalating forensic voice, not dry formal reporting. Avoid repetitive structures
+    such as "In [Month Year], the company did X." Frame events around executive psychology,
+    status, incentives, high stakes, accelerating burn rates, and warning signs that smart
+    investors saw but chose to explain away.
+- End EVERY scene, including the final scene, with a tension bridge: an unanswered
+    question, ominous foreshadowing, unresolved motive, or stark contradiction that pulls
+    directly into the next beat. The final bridge may resolve the facts while leaving the
+    audience with an unsettling implication or question.
 - Every scene's `micro_reveal` field must name one specific item from VERIFIED_FACTS'
   RED_FLAGS_AND_REVEALS section (or a specific fact/number if reveals are exhausted).
-- Every scene's narration must end on a forward-tension bridge into the next beat (an
-  open question, an ominous foreshadow, an unresolved thread) rather than a flat,
-  concluded statement -- EXCEPT the final scene, which resolves with the takeaway lesson.
 - Assign pacing_weight "urgent" to the hook, the climax, and payoff-beat scenes;
   "calm" to context-building scenes.
-- Mark 2-3 scenes as is_payoff_beat: true -- the story's biggest reveals or turning points.
-- Each narration should be 25-35 words.
-- For each scene, generate 2-3 ranked broll_keywords appropriate for stock footage search (e.g. "empty office chairs").
+- Mark EXACTLY FOUR scenes as `is_payoff_beat: true`, one for each of these verified
+    inflection points: peak valuation, the $6M trademark payout, the S-1 filing disaster,
+    and the final exit package. Use the closest verified wording from VERIFIED_FACTS and
+    do not invent a missing figure; these four beats must be the story's major turns.
+- Each narration must contain strictly 28-38 whitespace-delimited words. Count before
+    returning JSON; never pad with generic filler.
+- For every scene, return EXACTLY THREE ranked, distinct `broll_keywords`. They must be
+    specific, cinematic, and motion-heavy stock-search phrases, not generic queries such
+    as "business office", "office", "signing contract", or "corporate meeting". Prefer
+    visual tension such as "fast-moving modern skyscrapers time lapse", "tense executive
+    meeting", "crowded trading floor panic", "shattered glass slow motion", or "empty
+    luxury boardroom dusk". Each keyword must describe a different shot or visual idea.
 - Only add a text_overlay for payoff-beat scenes or scenes containing a specific number from VERIFIED_FACTS.
 
 MUSIC:
@@ -111,10 +129,10 @@ Return one JSON object shaped like this (the real response must contain 16-20 sc
 {
     "scenes": [{
         "scene_id": 1,
-        "narration": "The collapse arrived before anyone admitted the warning signs were real, but the next revelation explains why the damage spread so quickly.",
+        "narration": "The collapse arrived before anyone admitted the warning signs were real, but the next revelation explains why the damage spread so quickly and exposes who kept looking away.",
         "micro_reveal": "A specific warning sign from RED_FLAGS_AND_REVEALS",
         "pacing_weight": "urgent",
-        "broll_keywords": ["empty office", "falling stock chart"],
+        "broll_keywords": ["empty luxury boardroom dusk", "falling stock chart close-up", "executive silhouette city lights"],
         "motion": {"direction": "in", "speed": "urgent"},
         "text_overlay": null,
         "is_payoff_beat": false
@@ -247,7 +265,31 @@ def _stage2_call(fact_brief: str) -> ProjectPlan:
         json_str = raw_text
 
     data = json.loads(json_str, strict=False)
-    return ProjectPlan.model_validate(data)
+    plan = ProjectPlan.model_validate(data)
+    _validate_stage2_constraints(plan)
+    return plan
+
+
+def _validate_stage2_constraints(plan: ProjectPlan) -> None:
+    """Reject weak new plans without invalidating legacy project state."""
+    payoff_count = sum(scene.is_payoff_beat for scene in plan.scenes)
+    if payoff_count != 4:
+        raise ValueError(f"Stage 2 must mark exactly 4 payoff beats, got {payoff_count}")
+
+    for scene in plan.scenes:
+        word_count = len(scene.narration.split())
+        if not 28 <= word_count <= 38:
+            raise ValueError(
+                f"Scene {scene.scene_id} narration must contain 28-38 words, got {word_count}"
+            )
+
+        keywords = [keyword.strip() for keyword in scene.broll_keywords if keyword.strip()]
+        if len(keywords) != 3:
+            raise ValueError(
+                f"Scene {scene.scene_id} must contain exactly 3 B-roll keywords, got {len(keywords)}"
+            )
+        if len({keyword.casefold() for keyword in keywords}) != 3:
+            raise ValueError(f"Scene {scene.scene_id} B-roll keywords must be distinct")
 
 
 def _pause_between_stages() -> None:

@@ -1,27 +1,4 @@
-"""
-Per-scene FFmpeg rendering.
-
-CORRECTION FROM THE PRIOR REVISION: that version used a crop-based zoom
-with `eval=frame`, based on documentation for an option that does not
-exist in current FFmpeg's crop filter. Tested directly against ffmpeg
-6.1.1: `crop`'s w/h expressions cannot reference `t` at all -- it throws
-"Error when evaluating the expression" at filter init, every time,
-regardless of an `eval` parameter (which crop doesn't accept). crop's x/y
-CAN vary with time (confirmed working), but w/h cannot, so a *progressive*
-zoom is not achievable with crop on modern FFmpeg.
-
-zoompan is the filter FFmpeg actually provides for this, and it also
-tested clean: exact requested duration, real frame-to-frame motion
-confirmed by pixel diff, both zoom directions verified. The earlier
-concerns about zoompan (variable-framerate source instability) are handled
-by normalizing `fps=30` as the FIRST filter in the chain, before zoompan
-ever sees the source -- that was always the actual fix, independent of
-which zoom filter is used.
-
-drawtext's native `box=1:boxcolor=...:boxborderw=...` (replacing the old
-separate drawbox call) is retained from the prior pass -- that fix WAS
-verified working, including the "center" position case that used to crash.
-"""
+"""Per-scene FFmpeg rendering."""
 from __future__ import annotations
 
 import logging
@@ -36,64 +13,23 @@ FFMPEG_BIN = imageio_ffmpeg.get_ffmpeg_exe()
 
 log = logging.getLogger(__name__)
 
-UPSCALE_FACTOR = 2400
 RENDER_TIMEOUT_SEC = 180
 PREVIEW_WIDTH, PREVIEW_HEIGHT = 1280, 720
 PREVIEW_SCENE_LIMIT = 2
 
 
-def _escape_drawtext(text: str) -> str:
-    return (
-        text.replace("\\", "\\\\")
-        .replace(":", r"\:")
-        .replace("'", r"\'")
-        .replace("%", r"\%")
+def _subtitle_filter(audio_path: Path) -> str:
+    subtitle_path = audio_path.with_name(
+        audio_path.name.replace("audio_", "subs_", 1).rsplit(".", 1)[0] + ".ass"
     )
+    if not subtitle_path.exists():
+        raise FileNotFoundError(
+            f"Missing subtitles for {audio_path.name}: {subtitle_path}. Run 02_assets.py first."
+        )
 
-
-def _zoompan_filter(direction: str, speed: str, duration: float, width: int, height: int, fps: int) -> str:
-    """Progressive Ken Burns zoom. `d` (frames) and the per-frame increment
-    are both derived from the scene's actual duration so the zoom always
-    completes exactly across the clip regardless of scene length."""
-    total_frames = max(1, round(duration * fps))
-    zoom_amount = 0.18 if speed == "urgent" else 0.08
-    increment = zoom_amount / total_frames
-
-    if direction == "in":
-        z_expr = f"min(zoom+{increment:.8f},{1 + zoom_amount})"
-    else:
-        # start already zoomed in on frame 1, ease back down to 1.0
-        z_expr = f"if(eq(on,1),{1 + zoom_amount},max(zoom-{increment:.8f},1.0))"
-
-    return f"zoompan=z='{z_expr}':d={total_frames}:s={width}x{height}:fps={fps}"
-
-
-def _text_overlay_filter(overlay, duration: float) -> str | None:
-    if overlay is None:
-        return None
-
-    try:
-        if not Path("C:/Windows/Fonts/arial.ttf").exists():
-            log.warning("Arial font not found; rendering scene without drawtext overlay")
-            return None
-    except OSError as error:
-        log.warning("Could not check for Arial font (%s); rendering without drawtext overlay", error)
-        return None
-
-    font_path = "C\\:/Windows/Fonts/arial.ttf"
-    text = _escape_drawtext(overlay.text)
-    y_pos = "h-200" if overlay.position == "lower_third" else "(h-text_h)/2"
-    alpha_expr = f"if(lt(t\\,0.3)\\,t/0.3\\,if(gt(t\\,{duration}-0.3)\\,({duration}-t)/0.3\\,1))"
-
-    # drawtext's own box=1/boxcolor/boxborderw draw the backing rectangle
-    # sized to the actual rendered text within this SAME filter instance --
-    # verified working for both lower_third and center positions.
-    return (
-        f"drawtext=fontfile='{font_path}':text='{text}':fontsize=54:fontcolor=white:"
-        f"box=1:boxcolor=black@0.60:boxborderw=20:"
-        f"borderw=2:bordercolor=black:x=(w-text_w)/2:y={y_pos}:"
-        f"alpha='{alpha_expr}'"
-    )
+    escaped_path = str(subtitle_path.resolve()).replace("\\", "/")
+    escaped_path = escaped_path.replace(":", r"\:").replace("'", r"\'")
+    return f"subtitles='{escaped_path}':fontsdir='C\\:/Windows/Fonts'"
 
 
 def _encoder_args(preview: bool) -> list[str]:
@@ -104,39 +40,95 @@ def _encoder_args(preview: bool) -> list[str]:
     return ["-c:v", "libx264", "-preset", "veryfast", "-crf", "20"]
 
 
+def _camera_filter(scene, duration: float, width: int, height: int) -> str:
+    """Fill the frame, then apply a slow scene-specific camera move."""
+    progress = f"(t/{duration:.6f})"
+    rhythm_slot = (scene.scene_id - 1) % 3
+
+    if rhythm_slot == 1:
+        mode = "drift"
+    elif rhythm_slot == 2 or scene.motion.direction == "out":
+        mode = "pull"
+    else:
+        mode = "push"
+
+    if mode == "push":
+        scale_factor = f"(1+0.08*{progress})"
+        crop_x = f"(in_w-{width})/2 + {progress}*20"
+    elif mode == "pull":
+        scale_factor = f"(1.08-0.08*{progress})"
+        crop_x = f"(in_w-{width})/2"
+    else:
+        scale_factor = "1.04"
+        crop_x = f"(in_w-{width})/2 - 10 + {progress}*20"
+
+    return (
+        f"fps=30,scale={width}:{height}:force_original_aspect_ratio=increase,"
+        f"scale=w='iw*{scale_factor}':h='ih*{scale_factor}':eval=frame,"
+        f"crop={width}:{height}:'{crop_x}':'(in_h-{height})/2'"
+    )
+
+
 def render_scene(
-    scene, broll_path: Path, audio_path: Path, duration: float,
+    scene, broll_paths: list[Path], audio_path: Path, duration: float,
     out_dir: Path, width: int, height: int, preview: bool,
 ) -> Path:
-    fps = SETTINGS.fps
-    zoom_filter = _zoompan_filter(scene.motion.direction, scene.motion.speed, duration, width, height, fps)
-    text_filter = _text_overlay_filter(scene.text_overlay, duration)
+    clip_paths = [broll_paths] if isinstance(broll_paths, Path) else list(broll_paths)
+    if not clip_paths:
+        raise ValueError(f"Scene {scene.scene_id} has no B-roll clips")
 
-    upscale_w = int(width * (UPSCALE_FACTOR / SETTINGS.width))
+    clip_paths = clip_paths[:2]
+    subtitle_filter = _subtitle_filter(audio_path)
 
-    # fps normalization MUST come before zoompan -- this is what prevents
-    # the variable-framerate-source instability zoompan is usually blamed
-    # for; it was never really about the zoom math itself.
-    filters = [f"fps={fps}", f"scale={upscale_w}:-1", zoom_filter]
-    if text_filter:
-        filters.append(text_filter)
-    vf_chain = ",".join(filters)
+    if len(clip_paths) == 1:
+        camera_filter = _camera_filter(scene, duration, width, height)
+        filter_complex = (
+            f"[0:v]{camera_filter},setpts=PTS*1.15,"
+            f"tpad=stop_mode=clone:stop_duration={duration:.6f},"
+            f"trim=duration={duration:.6f},setpts=PTS-STARTPTS[vbase]"
+        )
+        audio_index = 1
+    else:
+        segment_duration = duration / 2
+        transition_duration = min(0.5, segment_duration / 2)
+        transition_offset = segment_duration - transition_duration
+        clip_filters = []
+        camera_filter = _camera_filter(scene, segment_duration, width, height)
+        for index in range(2):
+            clip_filters.append(
+            f"[{index}:v]{camera_filter},trim=duration={segment_duration:.6f},"
+                f"setpts=PTS-STARTPTS,tpad=stop_mode=clone:"
+                f"stop_duration={segment_duration:.6f}[v{index}]"
+            )
+        filter_complex = ";".join(clip_filters) + (
+            f";[v0][v1]xfade=transition=fade:duration={transition_duration:.6f}:"
+            f"offset={transition_offset:.6f},"
+            f"tpad=stop_mode=clone:stop_duration={transition_duration:.6f},"
+            f"trim=duration={duration:.6f},setpts=PTS-STARTPTS[vbase]"
+        )
+        audio_index = 2
+
+    filter_complex += f";[vbase]{subtitle_filter}[vout]"
 
     out_path = out_dir / f"scene_{scene.scene_id:03d}.mp4"
 
     cmd = [
-        "ffmpeg", "-y",
-        "-i", str(broll_path),
+        FFMPEG_BIN, "-y",
+    ]
+    for clip_path in clip_paths:
+        cmd.extend(["-i", str(clip_path)])
+    cmd.extend([
         "-i", str(audio_path),
-        "-vf", vf_chain,
+        "-filter_complex", filter_complex,
         "-t", str(duration),
-        "-map", "0:v", "-map", "1:a",
+        "-map", "[vout]", "-map", f"{audio_index}:a",
+        "-shortest",
         *_encoder_args(preview),
         "-c:a", "aac", "-b:a", "192k",
-        "-r", str(fps),
+        "-r", "30",
         "-pix_fmt", "yuv420p",
         str(out_path),
-    ]
+    ])
     try:
         subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=RENDER_TIMEOUT_SEC)
     except subprocess.CalledProcessError as e:
