@@ -1,0 +1,427 @@
+{
+  "topic": "The Fall of WeWork: How Adam Neumann Burned  Billion",
+  "slug": "the-fall-of-wework-how-adam-neumann-burned-billion",
+  "created_at": "2026-09-23T11:58:55.929057+00:00",
+  "fact_brief": "KEY_FACTS:\n- WeWork was founded in 2010 by Adam Neumann and Miguel McKelvey as a communal workspace provider.\n- The company rebranded as The We Company in 2019 to reflect its expansion into residential and educational sectors.\n- SoftBank’s Masayoshi Son was the primary driver of the company’s massive capital infusions and high valuation.\n- WeWork’s business model relied on signing long-term commercial leases while subletting space on short-term contracts.\n- The company’s 2019 S-1 filing revealed excessive financial losses, massive lease liabilities, and opaque corporate governance.\n- Following the failed IPO attempt, Adam Neumann was ousted as CEO with a significant exit package.\n- WeWork filed for Chapter 11 bankruptcy protection in November 2023.\n\nTIMELINE:\n- 2010-02: Adam Neumann and Miguel McKelvey incorporate WeWork in New York City.\n- 2019-01: SoftBank invests $2 billion, pushing the company valuation to $47 billion.\n- 2019-08: The company files its S-1 IPO registration, revealing $1.6 billion in losses for 2018.\n- 2019-09: WeWork indefinitely postpones its IPO due to intense scrutiny from investors and the media.\n- 2019-09-24: Adam Neumann resigns as CEO following pressure from the board and SoftBank.\n- 2023-11-06: WeWork officially files for Chapter 11 bankruptcy in New Jersey.\n\nNUMBERS:\n- Total venture funding: Approximately $15 billion\n- Peak valuation: $47 billion\n- 2018 net loss: $1.61 billion\n- Total lease obligations (as of 2019 filing): $47 billion\n- Neumann severance/consulting payout: ~$445 million\n\nKEY_PEOPLE:\n- Adam Neumann -- Co-founder and CEO whose eccentric management style and self-dealing became central to the company's collapse.\n- Masayoshi Son -- CEO of SoftBank who aggressively funded WeWork’s expansion and forced the high valuation model.\n- Miguel McKelvey -- Co-founder who focused on architecture and community design while Neumann handled investor relations.\n- Marcelo Claure -- SoftBank executive brought in to lead the turnaround effort and clean up the company's financials post-Neumann.\n\nRED_FLAGS_AND_REVEALS:\n- Neumann sold $700 million in stock prior to the planned IPO, signaling a lack of long-term confidence.\n- The company paid Neumann $6 million for the rights to the \"We\" trademark, which he had registered personally.\n- Internal reports noted Neumann frequently smoked marijuana on a private jet used for company business.\n- WeWork’s S-1 filing included \"Community Adjusted EBITDA,\" a non-standard metric that excluded major costs like rent.\n- Neumann held super-voting shares, giving him near-total control over all corporate decisions.\n- The company invested in unrelated ventures, including a wave pool company and a private elementary school.",
+  "plan": {
+    "scenes": [
+      {
+        "scene_id": 1,
+        "narration": "In November 2023, a forty-seven billion dollar dream officially turned to dust in a New Jersey courtroom. How did a global workspace revolution end in total, absolute bankruptcy?",
+        "micro_reveal": "WeWork filed for Chapter 11 bankruptcy protection in November 2023.",
+        "pacing_weight": "urgent",
+        "broll_keywords": [
+          "empty office lobby",
+          "courtroom gavel",
+          "shattered glass"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "urgent"
+        },
+        "text_overlay": {
+          "text": "November 2023: $47B Valuation Vanishes",
+          "position": "lower_third"
+        },
+        "is_payoff_beat": true
+      },
+      {
+        "scene_id": 2,
+        "narration": "This is the story of WeWork, founded in 2010 by Adam Neumann and Miguel McKelvey. It started with a communal workspace vision, but something deep inside was already rotting.",
+        "micro_reveal": "WeWork was founded in 2010 by Adam Neumann and Miguel McKelvey.",
+        "pacing_weight": "calm",
+        "broll_keywords": [
+          "startup office",
+          "co-founders working",
+          "modern interior design"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "calm"
+        },
+        "text_overlay": null,
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 3,
+        "narration": "The model was simple: sign long-term commercial leases and sublet them on short-term contracts. But who would fund a company that was fundamentally renting its own volatility?",
+        "micro_reveal": "WeWork’s business model relied on signing long-term commercial leases while subletting space on short-term contracts.",
+        "pacing_weight": "calm",
+        "broll_keywords": [
+          "signing contract",
+          "real estate building",
+          "business handshake"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "calm"
+        },
+        "text_overlay": null,
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 4,
+        "narration": "Enter Masayoshi Son of SoftBank, the primary driver of massive capital infusions. He poured cash into the company, forcing an aggressive valuation that defied traditional market logic and reality.",
+        "micro_reveal": "SoftBank’s Masayoshi Son was the primary driver of the company’s massive capital infusions and high valuation.",
+        "pacing_weight": "calm",
+        "broll_keywords": [
+          "money flying",
+          "investor meeting",
+          "business stock market"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "calm"
+        },
+        "text_overlay": null,
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 5,
+        "narration": "By January 2019, SoftBank’s two billion dollar investment pushed the valuation to forty-seven billion. But beneath the surface, the company was fueling growth with borrowed time and cash.",
+        "micro_reveal": "SoftBank invests $2 billion, pushing the company valuation to $47 billion.",
+        "pacing_weight": "calm",
+        "broll_keywords": [
+          "graph going up",
+          "currency stacks",
+          "financial report"
+        ],
+        "motion": {
+          "direction": "out",
+          "speed": "calm"
+        },
+        "text_overlay": {
+          "text": "$47 Billion Valuation",
+          "position": "lower_third"
+        },
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 6,
+        "narration": "Adam Neumann held super-voting shares, granting him near-total control over corporate decisions. This internal power dynamic meant that nobody could stop the eccentric management style taking hold of operations.",
+        "micro_reveal": "Neumann held super-voting shares, giving him near-total control over all corporate decisions.",
+        "pacing_weight": "calm",
+        "broll_keywords": [
+          "CEO presentation",
+          "corporate stage",
+          "leadership silhouette"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "calm"
+        },
+        "text_overlay": null,
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 7,
+        "narration": "Reports surfaced that Neumann frequently smoked marijuana on a private jet used for company business. While he lived like a king, the company’s financial health remained dangerously unclear, right?",
+        "micro_reveal": "Internal reports noted Neumann frequently smoked marijuana on a private jet used for company business.",
+        "pacing_weight": "calm",
+        "broll_keywords": [
+          "private jet",
+          "luxury interior",
+          "smoke cloud"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "calm"
+        },
+        "text_overlay": null,
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 8,
+        "narration": "The reckless spending extended to bizarre side projects, including a wave pool company and a private elementary school. Was this a workspace provider or a playground for corporate vanity?",
+        "micro_reveal": "The company invested in unrelated ventures, including a wave pool company and a private elementary school.",
+        "pacing_weight": "calm",
+        "broll_keywords": [
+          "surfing wave pool",
+          "school playground",
+          "corporate office"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "calm"
+        },
+        "text_overlay": null,
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 9,
+        "narration": "Before the public could judge them, the company paid Neumann six million dollars for the rights to the 'We' trademark. Yes, he had registered that trademark personally for profit.",
+        "micro_reveal": "The company paid Neumann $6 million for the rights to the 'We' trademark, which he had registered personally.",
+        "pacing_weight": "urgent",
+        "broll_keywords": [
+          "trademark symbol",
+          "money transfer",
+          "legal document"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "urgent"
+        },
+        "text_overlay": {
+          "text": "$6 Million Trademark Payout",
+          "position": "lower_third"
+        },
+        "is_payoff_beat": true
+      },
+      {
+        "scene_id": 10,
+        "narration": "By 2019, the company rebranded as The We Company to hide its struggles behind a massive expansion plan. But the IPO registration would soon expose everything they tried to mask.",
+        "micro_reveal": "The company rebranded as The We Company in 2019 to reflect its expansion into residential and educational sectors.",
+        "pacing_weight": "calm",
+        "broll_keywords": [
+          "rebranding sign",
+          "corporate office hallway",
+          "company logo"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "calm"
+        },
+        "text_overlay": null,
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 11,
+        "narration": "August 2019: the S-1 filing landed, revealing a 1.61 billion dollar net loss for 2018. They even used 'Community Adjusted EBITDA'—a metric that completely ignored rent costs. Insane, right?",
+        "micro_reveal": "WeWork’s S-1 filing included 'Community Adjusted EBITDA,' a non-standard metric that excluded major costs like rent.",
+        "pacing_weight": "urgent",
+        "broll_keywords": [
+          "red financial chart",
+          "accounting spreadsheet",
+          "shocked face"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "urgent"
+        },
+        "text_overlay": {
+          "text": "$1.61B 2018 Loss",
+          "position": "lower_third"
+        },
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 12,
+        "narration": "Investors realized that while the valuation was high, total lease obligations hit forty-seven billion dollars. The house of cards was leaning, but would it actually collapse this time?",
+        "micro_reveal": "Total lease obligations (as of 2019 filing): $47 billion.",
+        "pacing_weight": "urgent",
+        "broll_keywords": [
+          "collapsing building",
+          "stacked papers",
+          "anxious investor"
+        ],
+        "motion": {
+          "direction": "out",
+          "speed": "calm"
+        },
+        "text_overlay": {
+          "text": "$47B Lease Obligations",
+          "position": "lower_third"
+        },
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 13,
+        "narration": "Before the crash, Neumann cashed out, selling seven hundred million dollars in stock. He signaled no confidence in the future, leaving the public to wonder: who was left holding the bag?",
+        "micro_reveal": "Neumann sold $700 million in stock prior to the planned IPO, signaling a lack of long-term confidence.",
+        "pacing_weight": "urgent",
+        "broll_keywords": [
+          "money bags",
+          "sell stock button",
+          "exit door"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "urgent"
+        },
+        "text_overlay": {
+          "text": "$700 Million Cashed Out",
+          "position": "lower_third"
+        },
+        "is_payoff_beat": true
+      },
+      {
+        "scene_id": 14,
+        "narration": "September 2019: the IPO was postponed indefinitely. With pressure mounting from SoftBank and the board, Adam Neumann officially resigned as CEO on September 24th. But the damage was done.",
+        "micro_reveal": "Adam Neumann resigns as CEO following pressure from the board and SoftBank.",
+        "pacing_weight": "urgent",
+        "broll_keywords": [
+          "resignation letter",
+          "press conference",
+          "meeting room"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "calm"
+        },
+        "text_overlay": {
+          "text": "September 24, 2019: CEO Ousted",
+          "position": "lower_third"
+        },
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 15,
+        "narration": "Marcelo Claure arrived to clean up the financials, but the weight of fifteen billion in venture funding was too much. The company was sinking, but could the bankruptcy be avoided?",
+        "micro_reveal": "Marcelo Claure was a SoftBank executive brought in to lead the turnaround effort and clean up the company's financials.",
+        "pacing_weight": "calm",
+        "broll_keywords": [
+          "turnaround sign",
+          "business cleanup",
+          "calculating numbers"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "calm"
+        },
+        "text_overlay": null,
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 16,
+        "narration": "Neumann left with a four hundred forty-five million dollar severance package while the company filed for Chapter 11. When governance fails and greed leads, even billions cannot save a vision.",
+        "micro_reveal": "Neumann severance/consulting payout: ~$445 million.",
+        "pacing_weight": "urgent",
+        "broll_keywords": [
+          "bank check",
+          "closing office doors",
+          "bankruptcy seal"
+        ],
+        "motion": {
+          "direction": "out",
+          "speed": "urgent"
+        },
+        "text_overlay": {
+          "text": "$445M Exit Package",
+          "position": "lower_third"
+        },
+        "is_payoff_beat": true
+      }
+    ],
+    "suggested_music_mood": "corporate_tension",
+    "metadata": {
+      "youtube_title": "The $47 Billion Lie: How WeWork Actually Collapsed",
+      "youtube_description_base": "We explore the rise and spectacular fall of a company that promised to change the world but delivered a masterclass in corporate failure. From its communal workspace roots in 2010 to the disastrous 2019 S-1 filing, we uncover the red flags that investors ignored until it was too late.\n\nLearn how Adam Neumann’s management style, massive lease obligations, and reckless spending habits led to a $47 billion valuation collapse. We analyze the role of SoftBank’s Masayoshi Son and the complex financial maneuvering that fueled one of the most controversial business post-mortems in recent tech history.\n\nDiscover the lessons from WeWork's 2023 bankruptcy and the true cost of unchecked corporate hubris. This is the definitive timeline of how a business built on long-term liabilities and short-term optimism ultimately ran out of time and cash.",
+      "youtube_tags": [
+        "WeWork",
+        "Adam Neumann",
+        "SoftBank",
+        "Masayoshi Son",
+        "Business Failure",
+        "Tech Documentary",
+        "Startup Post-Mortem",
+        "Corporate Finance",
+        "IPO Collapse",
+        "Venture Capital",
+        "Bankruptcy",
+        "The We Company",
+        "Business Lessons",
+        "Startup Culture",
+        "Financial Crisis"
+      ]
+    }
+  },
+  "scene_assets": {
+    "1": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_001.mp3",
+      "duration": 12.366666666666667,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\19217897.mp4",
+      "rendered_scene_path": null
+    },
+    "2": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_002.mp3",
+      "duration": 11.966666666666667,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\6804659.mp4",
+      "rendered_scene_path": null
+    },
+    "3": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_003.mp3",
+      "duration": 11.1,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\8478946.mp4",
+      "rendered_scene_path": null
+    },
+    "4": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_004.mp3",
+      "duration": 13.3,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\855197.mp4",
+      "rendered_scene_path": null
+    },
+    "5": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_005.mp3",
+      "duration": 13.2,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\8478942.mp4",
+      "rendered_scene_path": null
+    },
+    "6": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_006.mp3",
+      "duration": 13.333333333333334,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\8141501.mp4",
+      "rendered_scene_path": null
+    },
+    "7": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_007.mp3",
+      "duration": 12.4,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\28586474.mp4",
+      "rendered_scene_path": null
+    },
+    "8": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_008.mp3",
+      "duration": 11.933333333333334,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\37122664.mp4",
+      "rendered_scene_path": null
+    },
+    "9": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_009.mp3",
+      "duration": 11.533333333333333,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\31635460.mp4",
+      "rendered_scene_path": null
+    },
+    "10": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_010.mp3",
+      "duration": 12.433333333333334,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\34633268.mp4",
+      "rendered_scene_path": null
+    },
+    "11": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_011.mp3",
+      "duration": 17.666666666666668,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\38725026.mp4",
+      "rendered_scene_path": null
+    },
+    "12": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_012.mp3",
+      "duration": 11.7,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\4876874.mp4",
+      "rendered_scene_path": null
+    },
+    "13": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_013.mp3",
+      "duration": 12.2,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\6266920.mp4",
+      "rendered_scene_path": null
+    },
+    "14": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_014.mp3",
+      "duration": 14.9,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\7489714.mp4",
+      "rendered_scene_path": null
+    },
+    "15": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_015.mp3",
+      "duration": 11.166666666666666,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\5219643.mp4",
+      "rendered_scene_path": null
+    },
+    "16": {
+      "audio_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\audio\\audio_016.mp3",
+      "duration": 12.0,
+      "broll_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\raw_footage\\7710744.mp4",
+      "rendered_scene_path": null
+    }
+  },
+  "final_output_path": "D:\\pipeline\\projects\\the-fall-of-wework-how-adam-neumann-burned-billion\\final_output\\the-fall-of-wework-how-adam-neumann-burned-billion_final.mp4"
+}

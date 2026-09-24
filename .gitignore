@@ -1,0 +1,47 @@
+# Environment and secrets
+.env
+*.env
+.env.*
+!.env.example
+
+# Python virtual environments and caches
+venv/
+.venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Logs and local tooling output
+*.log
+
+# Heavy executables and bundled media tools
+*.exe
+*.dll
+ffmpeg*
+ffprobe*
+ffplay*
+
+# Generated video/audio outputs and pipeline artifacts
+projects/*/output/
+projects/*/final_output/
+projects/*/intermediate_scenes/
+projects/*/raw_footage/
+projects/*/audio/
+*.mp4
+*.mkv
+*.mov
+*.mp3
+*.wav
+assets/music/*.mp3
+
+# Editor and operating-system artifacts
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
