@@ -29,7 +29,7 @@ def _subtitle_filter(audio_path: Path) -> str:
 
     escaped_path = str(subtitle_path.resolve()).replace("\\", "/")
     escaped_path = escaped_path.replace(":", r"\:").replace("'", r"\'")
-    return f"subtitles='{escaped_path}':fontsdir='C\\:/Windows/Fonts'"
+    return f"subtitles='{escaped_path}'"
 
 
 def _encoder_args(preview: bool) -> list[str]:
@@ -98,7 +98,7 @@ def render_scene(
             clip_filters.append(
             f"[{index}:v]{camera_filter},trim=duration={segment_duration:.6f},"
                 f"setpts=PTS-STARTPTS,tpad=stop_mode=clone:"
-                f"stop_duration={segment_duration:.6f}[v{index}]"
+                f"stop_duration={segment_duration:.6f},fps=30,settb=AVTB[v{index}]"
             )
         filter_complex = ";".join(clip_filters) + (
             f";[v0][v1]xfade=transition=fade:duration={transition_duration:.6f}:"
