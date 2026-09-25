@@ -26,7 +26,7 @@ def main() -> None:
     parser.add_argument("project_dir", help="e.g. projects/quibi-collapse-ab12cd34")
     parser.add_argument(
         "--preview", action="store_true",
-        help="Render only the first 2 scenes at 720p for a fast visual/audio check",
+        help="Render only the first 2 vertical scenes for a fast visual/audio check",
     )
     args = parser.parse_args()
 
@@ -50,15 +50,30 @@ def main() -> None:
 
     audio_data = {sid: (Path(sa.audio_path), sa.duration) for sid, sa in state.scene_assets.items()}
     broll_paths = {
-        sid: [Path(path) for path in (sa.broll_paths or [sa.broll_path]) if path]
+        sid: Path(next(path for path in (sa.broll_paths or [sa.broll_path]) if path))
         for sid, sa in state.scene_assets.items()
     }
+    subtitles_paths = {}
+    for scene in state.plan.scenes:
+        assets = state.scene_assets[scene.scene_id]
+        subtitle_path = (
+            Path(assets.subtitles_path)
+            if assets.subtitles_path
+            else paths.audio / f"subs_{scene.scene_id:03d}.ass"
+        )
+        if subtitle_path.exists():
+            subtitles_paths[scene.scene_id] = subtitle_path
 
     scene_count = min(2, len(state.plan.scenes)) if args.preview else len(state.plan.scenes)
     log.info("Rendering %d scene(s) (preview=%s, encoder=%s)...", scene_count, args.preview, SETTINGS.video_encoder)
 
     scene_files = render_all_scenes(
-        state.plan.scenes, broll_paths, audio_data, paths.intermediate_scenes, preview=args.preview,
+        state.plan.scenes,
+        broll_paths,
+        audio_data,
+        paths.intermediate_scenes,
+        subtitles_paths=subtitles_paths,
+        preview=args.preview,
     )
 
     if args.preview:

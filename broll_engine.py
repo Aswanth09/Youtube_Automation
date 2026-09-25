@@ -110,17 +110,28 @@ def _local_cache_lookup(conn: sqlite3.Connection, keyword: str, exclude_ids: set
 
 
 def _pexels_fetch_candidates(keyword: str) -> list[dict]:
-    """Returns ALL candidates (up to per_page), ranked by Pexels relevance --
-    callers must iterate them, not just take index 0."""
-    _rate_limiter.wait()
-    resp = requests.get(
-        PEXELS_SEARCH_URL,
-        headers={"Authorization": SETTINGS.pexels_api_key},
-        params={"query": keyword, "orientation": "landscape", "size": "large", "per_page": 3},
-        timeout=20,
-    )
-    resp.raise_for_status()
-    return resp.json().get("videos", [])
+    """Return portrait candidates, falling back to landscape when empty."""
+    headers = {"Authorization": SETTINGS.pexels_api_key}
+    for orientation in ("portrait", "landscape"):
+        _rate_limiter.wait()
+        resp = requests.get(
+            PEXELS_SEARCH_URL,
+            headers=headers,
+            params={
+                "query": keyword,
+                "orientation": orientation,
+                "size": "large",
+                "per_page": 5,
+            },
+            timeout=20,
+        )
+        resp.raise_for_status()
+        videos = resp.json().get("videos", [])
+        if videos:
+            return videos
+        if orientation == "portrait":
+            log.info("No portrait B-roll for %r; retrying with landscape footage", keyword)
+    return []
 
 
 def _download_clip(video: dict, dest_dir: Path) -> tuple[str, Path, int, int]:

@@ -34,16 +34,17 @@ def main() -> None:
     log.info("Synthesizing narration audio for %d scenes...", len(state.plan.scenes))
     for scene in state.plan.scenes:
         existing = state.scene_assets.get(scene.scene_id, SceneAssets())
-        subtitle_path = paths.audio / f"subs_{scene.scene_id:03d}.ass"
         if (
             existing.audio_path
             and Path(existing.audio_path).exists()
-            and subtitle_path.exists()
+            and existing.subtitles_path
+            and Path(existing.subtitles_path).exists()
         ):
             log.info("Scene %d audio already exists, skipping.", scene.scene_id)
             continue
-        audio_path, duration = generate_scene_audio(scene.scene_id, scene.narration, paths.audio)
+        audio_path, ass_path, duration = generate_scene_audio(scene.scene_id, scene.narration, paths.audio)
         existing.audio_path = str(audio_path)
+        existing.subtitles_path = str(ass_path)
         existing.duration = duration
         state.scene_assets[scene.scene_id] = existing
     state.save(paths.state_file)

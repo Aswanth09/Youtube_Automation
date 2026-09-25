@@ -1,7 +1,7 @@
 """
-Step 1: research + structured plan + YouTube metadata. Initializes the
-project folder and project_state.json. Does NOT touch TTS, B-roll, or
-FFmpeg -- those are 02_assets.py and 03_render.py.
+Step 1: research + YouTube Short plan + metadata. Initializes the project
+folder and project_state.json. Does NOT touch TTS, B-roll, or FFmpeg --
+those are 02_assets.py and 03_render.py.
 
 Usage:
     python 01_plan.py "Quibi collapse"
@@ -20,7 +20,7 @@ from project_state import new_project_state
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 log = logging.getLogger("01_plan")
 
-WORDS_PER_MINUTE = 150  # rough TTS pacing estimate, used ONLY for the description's timestamp guide
+WORDS_PER_MINUTE = 155  # rough Short pacing estimate for approximate description timestamps
 
 
 def slugify(text: str) -> str:
@@ -50,7 +50,7 @@ def build_final_description(base: str, scenes: list) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Step 1: research + plan + metadata")
+    parser = argparse.ArgumentParser(description="Step 1: research + YouTube Short plan + metadata")
     parser.add_argument("topic", help="Company/event to research and script, e.g. 'Quibi collapse'")
     args = parser.parse_args()
 
@@ -61,7 +61,7 @@ def main() -> None:
     fact_brief = stage1_fact_extraction(args.topic)
     log.info("Fact brief captured (%d words).", len(fact_brief.split()))
 
-    log.info("Stage 2: structured scene + metadata generation...")
+    log.info("Stage 2: 50-65 second Short scene + metadata generation...")
     plan = stage2_generate_scenes(fact_brief)
     log.info(
         "Generated %d scenes. Music mood: %s. Title: %s",

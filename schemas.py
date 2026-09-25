@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, List, Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 MusicMood = Literal["corporate_tension", "dark_suspense", "slow_investigation"]
 
@@ -29,16 +29,16 @@ class Motion(BaseModel):
 
 
 class TextOverlay(BaseModel):
-    text: str = Field(..., max_length=250)
-    position: Literal["lower_third", "center"] = "lower_third"
+    text: str = Field(..., max_length=100)
+    position: Literal["lower_third", "center"] = "center"
 
 
 class Scene(BaseModel):
-    scene_id: int = Field(..., ge=1, le=50)
-    narration: str
+    scene_id: int = Field(..., ge=1, le=7)
+    narration: str = Field(...)
     micro_reveal: str = Field(default="Key detail")
-    pacing_weight: Literal["calm", "urgent"] = "calm"
-    broll_keywords: list[str] = Field(default_factory=lambda: ["business", "office"])
+    pacing_weight: Literal["calm", "urgent"] = "urgent"
+    broll_keywords: list[str] = Field(..., min_length=2, max_length=4)
     motion: Motion = Field(default_factory=Motion)
     text_overlay: Optional[TextOverlay] = None
     is_payoff_beat: bool = False
@@ -50,7 +50,7 @@ class Scene(BaseModel):
             return None
         if isinstance(v, str):
             clean = v.strip()
-            return {"text": clean, "position": "lower_third"} if clean else None
+            return {"text": clean, "position": "center"} if clean else None
         if isinstance(v, dict) and "text" in v:
             return v
         return None
@@ -69,12 +69,12 @@ class Scene(BaseModel):
             return [x.strip() for x in v.split(",") if x.strip()]
         if isinstance(v, list):
             return [str(x) for x in v]
-        return ["business", "office"]
+        return []
 
 class VideoMetadata(BaseModel):
     youtube_title: str = Field(..., max_length=150)
     youtube_description_base: str
-    youtube_tags: list[str] = Field(default_factory=list)
+    youtube_tags: list[str] = Field(default_factory=list, min_length=5, max_length=10)
 
     @field_validator("youtube_tags", mode="before")
     @classmethod
@@ -87,7 +87,7 @@ class VideoMetadata(BaseModel):
 
 
 class ProjectPlan(BaseModel):
-    scenes: list[Scene] = Field(..., min_length=8, max_length=30)
+    scenes: list[Scene] = Field(..., min_length=5, max_length=7)
     suggested_music_mood: MusicMood = "corporate_tension"
     metadata: VideoMetadata
 
@@ -108,3 +108,18 @@ class ProjectPlan(BaseModel):
         for i, s in enumerate(v, 1):
             s.scene_id = i
         return v
+
+    @model_validator(mode="after")
+    def validate_short_script(self) -> "ProjectPlan":
+        total_words = sum(len(scene.narration.split()) for scene in self.scenes)
+        if not 130 <= total_words <= 160:
+            raise ValueError(f"Short script must contain 130-160 words, got {total_words}")
+
+        for scene in self.scenes:
+            word_count = len(scene.narration.split())
+            lower, upper = (8, 12) if scene.scene_id == 1 else (20, 26)
+            if not lower <= word_count <= upper:
+                raise ValueError(
+                    f"Scene {scene.scene_id} narration must contain {lower}-{upper} words, got {word_count}"
+                )
+        return self

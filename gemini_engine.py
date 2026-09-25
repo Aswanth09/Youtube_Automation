@@ -25,9 +25,7 @@ _client = genai.Client(api_key=SETTINGS.gemini_api_key)
 _active_working_model: Optional[str] = None
 
 MODELS_POOL = [
-    "gemini-2.5-flash-lite",
     "gemini-3.1-flash-lite",
-    "gemini-flash-lite-latest",
     "gemini-3.5-flash-lite",
 ]
 
@@ -64,11 +62,10 @@ Keep total output under 600 words.
 """
 
 STAGE2_PROMPT_TEMPLATE = """\
-You are the lead writer and visual director for a high-retention faceless YouTube
-documentary channel in the style of an escalating forensic investigation: psychologically
-sharp, cinematic, skeptical, and specific. The audience should feel that each scene
-uncovers a deeper motive, warning sign, or contradiction in a business/tech post-mortem.
-Generate a structured scene breakdown plus YouTube metadata.
+You are the lead writer and visual director for a high-retention YouTube Shorts channel
+covering business and tech collapses. Write a 50-65 second Short: fast, cinematic,
+psychologically sharp, specific, and built to replay. Every scene must advance the
+investigation and leave the viewer needing the next beat.
 
 CRITICAL CONSTRAINT: Use ONLY the facts, dates, numbers, and names provided in the
 VERIFIED_FACTS block below. Do not introduce any date, dollar figure, statistic, or named
@@ -78,70 +75,107 @@ VERIFIED_FACTS:
 {fact_brief}
 
 STRUCTURE:
-- Output between 16 and 20 scene objects, with sequential scene_id starting at 1.
-- 3-Act structure: Act 1 (scenes ~1-3) opens on the catastrophe and the psychology of
-    hubris; Act 2 (scenes ~4-13) traces ignored warning signs, escalating burn rates, and
-    the decisions smart investors rationalized; Act 3 covers the unraveling, fallout,
-    final exit, and the uncomfortable lesson.
+- Output 5-7 scene objects with sequential scene_id starting at 1.
+- Target 130-160 words total. Scene 1 is the 0-3 second hook; scenes 2-5 escalate
+    self-dealing, secret memos, burn rates, and ignored red flags; the final scene delivers
+    the collapse and channel stinger.
 
 RETENTION REQUIREMENTS:
-- Scene 1 is an EXTREME COLD OPEN. Before naming the company, open on a shocking paradox,
-    financial contrast, or moment of hubris: an empire valued like a revolution that could
-    not survive its own spending, a vanished fortune, or a confident promise beside its
-    catastrophic outcome. Hook on what happened before revealing who.
-- Use an escalating forensic voice, not dry formal reporting. Avoid repetitive structures
-    such as "In [Month Year], the company did X." Frame events around executive psychology,
-    status, incentives, high stakes, accelerating burn rates, and warning signs that smart
-    investors saw but chose to explain away.
-- End EVERY scene, including the final scene, with a tension bridge: an unanswered
-    question, ominous foreshadowing, unresolved motive, or stark contradiction that pulls
-    directly into the next beat. The final bridge may resolve the facts while leaving the
-    audience with an unsettling implication or question.
-- Every scene's `micro_reveal` field must name one specific item from VERIFIED_FACTS'
-  RED_FLAGS_AND_REVEALS section (or a specific fact/number if reveals are exhausted).
-- Assign pacing_weight "urgent" to the hook, the climax, and payoff-beat scenes;
-  "calm" to context-building scenes.
-- Mark EXACTLY FOUR scenes as `is_payoff_beat: true`, one for each of these verified
-    inflection points: peak valuation, the $6M trademark payout, the S-1 filing disaster,
-    and the final exit package. Use the closest verified wording from VERIFIED_FACTS and
-    do not invent a missing figure; these four beats must be the story's major turns.
-- Each narration must contain strictly 28-38 whitespace-delimited words. Count before
-    returning JSON; never pad with generic filler.
-- For every scene, return EXACTLY THREE ranked, distinct `broll_keywords`. They must be
-    specific, cinematic, and motion-heavy stock-search phrases, not generic queries such
-    as "business office", "office", "signing contract", or "corporate meeting". Prefer
-    visual tension such as "fast-moving modern skyscrapers time lapse", "tense executive
-    meeting", "crowded trading floor panic", "shattered glass slow motion", or "empty
-    luxury boardroom dusk". Each keyword must describe a different shot or visual idea.
-- Only add a text_overlay for payoff-beat scenes or scenes containing a specific number from VERIFIED_FACTS.
+- Scene 1 must contain exactly 8-12 words and begin with a high-stakes financial contrast
+    or paradox. Withhold the company name until scene 2. Scene 1 must include a centered
+    stat-card `text_overlay` such as "$47,000,000,000 → $0"; stagger it with the voiceover
+    and do not repeat the narration word-for-word in the overlay.
+- Scenes 2-7 must contain exactly 20-26 words each. Use escalating psychological tension:
+    self-dealing, secret memos, loans against stock, shocking figures, status, incentives,
+    and warning signs that sophisticated investors ignored. Avoid repetitive "In [date], X"
+    sentence openings and dry corporate reporting.
+- The final scene must echo the opening metric or contrast to create an endless loop and
+    must end with this exact sentence: "Follow for the next collapse."
+- Every scene's `micro_reveal` must name one specific verified fact, red flag, or figure.
+- Use "urgent" pacing by default. Return 2-3 distinct, ranked, motion-heavy cinematic
+    B-roll queries per scene, such as "fast modern skyscrapers time lapse night", "tense
+    trading floor", or "empty luxury boardroom dusk". Do not use generic filler queries.
+- Set `is_payoff_beat` true for major reveal scenes and use centered stat-card overlays
+    when a verified figure needs visual emphasis.
 
 MUSIC:
 - Set `suggested_music_mood` to exactly one of: "corporate_tension", "dark_suspense", "slow_investigation".
 
 METADATA:
 - `youtube_title`: under 100 characters, curiosity-driven, accurate to the story.
-- `youtube_description_base`: exactly 3 paragraphs of SEO-optimized description text (omit timestamps).
-- `youtube_tags`: exactly 15 tags targeted at US search behavior.
+- `youtube_description_base`: 2-3 paragraphs of SEO-optimized description text (omit timestamps).
+- `youtube_tags`: 5-10 tags targeted at US search behavior, including `#Shorts`.
 """
 
 STAGE2_JSON_EXAMPLE = """\
-Return one JSON object shaped like this (the real response must contain 16-20 scenes):
 {
-    "scenes": [{
-        "scene_id": 1,
-        "narration": "The collapse arrived before anyone admitted the warning signs were real, but the next revelation explains why the damage spread so quickly and exposes who kept looking away.",
-        "micro_reveal": "A specific warning sign from RED_FLAGS_AND_REVEALS",
-        "pacing_weight": "urgent",
-        "broll_keywords": ["empty luxury boardroom dusk", "falling stock chart close-up", "executive silhouette city lights"],
-        "motion": {"direction": "in", "speed": "urgent"},
-        "text_overlay": null,
-        "is_payoff_beat": false
-    }],
-    "suggested_music_mood": "corporate_tension",
+    "scenes": [
+        {
+            "scene_id": 1,
+            "narration": "Forty-seven billion dollars. Then, ninety days later, absolutely nothing.",
+            "micro_reveal": "Peak valuation vs total collapse",
+            "pacing_weight": "urgent",
+            "broll_keywords": ["empty office lobby", "shattered glass falling", "dark skyscrapers night"],
+            "motion": {"direction": "in", "speed": "urgent"},
+            "text_overlay": {"text": "$47,000,000,000 → $0", "position": "center"},
+            "is_payoff_beat": true
+        },
+        {
+            "scene_id": 2,
+            "narration": "This was not a standard market crash. This was WeWork, an empire built on charismatic storytelling that seduced the smartest venture capitalists on Earth.",
+            "micro_reveal": "WeWork communal workspace movement pitch",
+            "pacing_weight": "urgent",
+            "broll_keywords": ["modern startup office", "investor meeting room", "city skyline time lapse"],
+            "motion": {"direction": "in", "speed": "urgent"},
+            "text_overlay": null,
+            "is_payoff_beat": false
+        },
+        {
+            "scene_id": 3,
+            "narration": "SoftBank alone pumped over ten billion dollars into the furnace, pricing an ordinary real estate subleasing company higher than the world's largest commercial airlines.",
+            "micro_reveal": "SoftBank massive capital infusions and high valuation",
+            "pacing_weight": "urgent",
+            "broll_keywords": ["currency stacks", "luxury penthouse dusk", "financial stock chart falling"],
+            "motion": {"direction": "in", "speed": "urgent"},
+            "text_overlay": {"text": "$10B Invested", "position": "center"},
+            "is_payoff_beat": false
+        },
+        {
+            "scene_id": 4,
+            "narration": "Behind closed doors, Adam Neumann trademarked the common word 'We' and charged his own cash-strapped company six million dollars just to use it.",
+            "micro_reveal": "Company paid Neumann $6 million for the 'We' trademark",
+            "pacing_weight": "urgent",
+            "broll_keywords": ["legal contract signing", "money transfer digital", "boardroom argument"],
+            "motion": {"direction": "in", "speed": "urgent"},
+            "text_overlay": {"text": "$6M Trademark Payout", "position": "center"},
+            "is_payoff_beat": true
+        },
+        {
+            "scene_id": 5,
+            "narration": "Even worse, he took personal loans against company stock to purchase commercial buildings, then leased those exact properties right back to WeWork for massive private profit.",
+            "micro_reveal": "2019 S-1 filing revealed massive lease liabilities",
+            "pacing_weight": "urgent",
+            "broll_keywords": ["red financial spreadsheet", "anxious investor phone call", "courtroom gavel"],
+            "motion": {"direction": "in", "speed": "urgent"},
+            "text_overlay": {"text": "-$2B Annual Loss", "position": "center"},
+            "is_payoff_beat": false
+        },
+        {
+            "scene_id": 6,
+            "narration": "The S-1 filing revealed two billion in losses and forty-seven billion in lease liabilities. Forty-seven billion erased in weeks. Follow for the next collapse.",
+            "micro_reveal": "Chapter 11 bankruptcy filing and final collapse",
+            "pacing_weight": "urgent",
+            "broll_keywords": ["closing office doors", "empty corporate building night", "bankruptcy sign"],
+            "motion": {"direction": "out", "speed": "urgent"},
+            "text_overlay": {"text": "Follow for more", "position": "center"},
+            "is_payoff_beat": true
+        }
+    ],
+    "suggested_music_mood": "dark_suspense",
     "metadata": {
-        "youtube_title": "A curiosity-driven title under 100 characters",
-        "youtube_description_base": "First SEO paragraph.\n\nSecond SEO paragraph.\n\nThird SEO paragraph.",
-        "youtube_tags": ["tag01", "tag02", "tag03", "tag04", "tag05", "tag06", "tag07", "tag08", "tag09", "tag10", "tag11", "tag12", "tag13", "tag14", "tag15"]
+        "youtube_title": "The $47 Billion Lie: How WeWork Burned It All #Shorts",
+        "youtube_description_base": "How Adam Neumann burned $47 billion in 90 days. The truth behind the WeWork collapse.\\n\\nSubscribe for more corporate downfalls and financial post-mortems.",
+        "youtube_tags": ["#Shorts", "WeWork", "Adam Neumann", "Business Documentary", "Startup Failure", "Tech Collapse"]
     }
 }
 """
@@ -271,25 +305,34 @@ def _stage2_call(fact_brief: str) -> ProjectPlan:
 
 
 def _validate_stage2_constraints(plan: ProjectPlan) -> None:
-    """Reject weak new plans without invalidating legacy project state."""
-    payoff_count = sum(scene.is_payoff_beat for scene in plan.scenes)
-    if payoff_count != 4:
-        raise ValueError(f"Stage 2 must mark exactly 4 payoff beats, got {payoff_count}")
+    """Reject weak new YouTube Short plans during generation."""
+    if not 5 <= len(plan.scenes) <= 7:
+        raise ValueError(f"Short plan must contain 5-7 scenes, got {len(plan.scenes)}")
+
+    total_words = sum(len(scene.narration.split()) for scene in plan.scenes)
+    if not 130 <= total_words <= 160:
+        raise ValueError(f"Short script must contain 130-160 words, got {total_words}")
 
     for scene in plan.scenes:
         word_count = len(scene.narration.split())
-        if not 28 <= word_count <= 38:
+        lower, upper = (8, 12) if scene.scene_id == 1 else (20, 26)
+        if not lower <= word_count <= upper:
             raise ValueError(
-                f"Scene {scene.scene_id} narration must contain 28-38 words, got {word_count}"
+                f"Scene {scene.scene_id} narration must contain {lower}-{upper} words, got {word_count}"
             )
 
         keywords = [keyword.strip() for keyword in scene.broll_keywords if keyword.strip()]
-        if len(keywords) != 3:
+        if not 2 <= len(keywords) <= 3:
             raise ValueError(
-                f"Scene {scene.scene_id} must contain exactly 3 B-roll keywords, got {len(keywords)}"
+                f"Scene {scene.scene_id} must contain 2-3 B-roll keywords, got {len(keywords)}"
             )
-        if len({keyword.casefold() for keyword in keywords}) != 3:
+        if len({keyword.casefold() for keyword in keywords}) != len(keywords):
             raise ValueError(f"Scene {scene.scene_id} B-roll keywords must be distinct")
+
+    if plan.scenes[0].text_overlay is None:
+        raise ValueError("Scene 1 must include a centered stat-card text_overlay")
+    if not plan.scenes[-1].narration.endswith("Follow for the next collapse."):
+        raise ValueError('Final scene must end with "Follow for the next collapse."')
 
 
 def _pause_between_stages() -> None:

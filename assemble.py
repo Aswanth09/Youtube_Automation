@@ -29,7 +29,7 @@ MUSIC_SEARCH_TERMS = {
 
 DUCK_FILTER = (
     "[1:a]volume=0.18[bed];"
-    "[0:a][bed]sidechaincompress=threshold=0.03:ratio=6:attack=15:release=800:makeup=1[bedducked];"
+    "[0:a][bed]sidechaincompress=threshold=0.125:ratio=4:attack=20:release=300:makeup=1[bedducked];"
     "[0:a][bedducked]amix=inputs=2:duration=first:dropout_transition=2[aout]"
 )
 

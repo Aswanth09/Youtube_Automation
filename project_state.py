@@ -16,6 +16,7 @@ from schemas import ProjectPlan
 
 class SceneAssets(BaseModel):
     audio_path: Optional[str] = None
+    subtitles_path: Optional[str] = None
     duration: Optional[float] = None
     broll_paths: list[str] = Field(default_factory=list)
     broll_path: Optional[str] = None
