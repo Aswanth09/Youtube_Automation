@@ -91,10 +91,19 @@ RETENTION REQUIREMENTS:
     must end with this exact sentence: "Follow for the next collapse."
 - Every scene's `micro_reveal` must name one specific verified fact, red flag, or figure.
 - Use "urgent" pacing by default. Return exactly 2 or 3 distinct, ranked, motion-heavy
-    metaphorical stock queries per scene. Strictly avoid abstract corporate terms such as
-    "office" and "crypto chart". Demand images like "man holding head in hands dark room",
-    "flashing red server rack", "counting cash rapid motion", "luxury sports car city night",
-    "shattered glass floor", and "empty boardroom rain outside".
+    B-roll queries per scene.
+- B-ROLL KEYWORDS RULES:
+    Strictly avoid abstract lifestyle metaphors (NO sports cars, NO champagne, NO nightclubs).
+    Output ONLY concrete, high-tension financial documentary and white-collar drama keywords.
+    Use exact visual anchors like:
+    - "red stock market graph falling"
+    - "trader hands on head stressed"
+    - "counting hundred dollar bills fast"
+    - "server rack blinking dark room"
+    - "financial audit documents rubber stamp"
+    - "handcuffs police white collar crime"
+    - "closing office glass doors night"
+    - "empty trading floor after hours"
 - Set `is_payoff_beat` true for major reveal scenes and use centered stat-card overlays
     when a verified figure needs visual emphasis.
 
@@ -201,6 +210,7 @@ def _generate_with_fallback(
     """Generate content while cycling through available models after failures."""
     if max_cycles < 1:
         raise ValueError("max_cycles must be at least 1")
+        
 
     candidates = _get_candidate_models()
     last_error: Optional[Exception] = None

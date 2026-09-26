@@ -15,30 +15,34 @@ FFMPEG_BIN = imageio_ffmpeg.get_ffmpeg_exe()
 log = logging.getLogger(__name__)
 
 RENDER_TIMEOUT_SEC = 180
-PREVIEW_WIDTH, PREVIEW_HEIGHT = 1080, 1920
+VIDEO_WIDTH, VIDEO_HEIGHT = 1080, 1920
+PREVIEW_WIDTH, PREVIEW_HEIGHT = VIDEO_WIDTH, VIDEO_HEIGHT
 PREVIEW_SCENE_LIMIT = 2
 
 
-def _subtitle_filter(subtitles_path: Optional[Path]) -> str | None:
-    if subtitles_path is None:
-        raise FileNotFoundError("Subtitle path is required for every rendered scene")
+def _subtitle_filter(subtitles_path: Path) -> str:
     if not subtitles_path.exists():
         raise FileNotFoundError(f"Missing ASS subtitles: {subtitles_path}")
 
-    sub_path = str(subtitles_path.resolve()).replace("\\", "/").replace(":", r"\:")
-    return f"subtitles='{sub_path}'"
+    escaped_sub = str(subtitles_path.resolve()).replace("\\", "/").replace(":", r"\:")
+    return f"subtitles='{escaped_sub}':fontsdir='C\\:/Windows/Fonts'"
 
 
 def _vertical_motion_filter(
-    duration: float, width: int, height: int, time_offset: float = 0.0,
+    total_duration: float,
+    segment_duration: float,
+    width: int,
+    height: int,
+    time_offset: float = 0.0,
 ) -> str:
-    progress = f"(t/{duration})" if time_offset == 0 else f"((t+{time_offset})/{duration})"
+    progress = f"(t/{total_duration})" if time_offset == 0 else f"((t+{time_offset})/{total_duration})"
     return (
         f"fps=30,scale={width}:{height}:force_original_aspect_ratio=increase,"
         f"crop={width}:{height},"
         f"scale=eval=frame:w='{width}*(1+0.04*{progress})':"
         f"h='{height}*(1+0.04*{progress})',"
-        f"crop={width}:{height},settb=AVTB"
+        f"crop={width}:{height},settb=AVTB,"
+        f"trim=duration={segment_duration:.6f},setpts=PTS-STARTPTS,settb=AVTB,setsar=1"
     )
 
 
@@ -47,6 +51,9 @@ def render_scene(
     duration: float, out_dir: Path, width: int = 1080, height: int = 1920,
     preview: bool = False,
 ) -> Path:
+    if (width, height) != (VIDEO_WIDTH, VIDEO_HEIGHT):
+        raise ValueError(f"Render dimensions must be {VIDEO_WIDTH}x{VIDEO_HEIGHT}")
+
     clip_paths = [broll_path] if isinstance(broll_path, Path) else list(broll_path)
     if len(clip_paths) < 2:
         raise ValueError(f"Scene {scene.scene_id} requires two B-roll clips")
@@ -58,11 +65,9 @@ def render_scene(
     first_duration = duration / 2
     second_duration = duration - first_duration
     filter_complex = (
-        f"[0:v]{_vertical_motion_filter(duration, width, height)},"
-        f"trim=duration={first_duration:.6f},setpts=PTS-STARTPTS,settb=AVTB[v0];"
-        f"[1:v]{_vertical_motion_filter(duration, width, height, first_duration)},"
-        f"trim=duration={second_duration:.6f},setpts=PTS-STARTPTS,settb=AVTB[v1];"
-        f"[v0][v1]concat=n=2:v=1:a=0,settb=AVTB[vbase];"
+        f"[0:v]{_vertical_motion_filter(duration, first_duration, width, height)}[v0];"
+        f"[1:v]{_vertical_motion_filter(duration, second_duration, width, height, first_duration)}[v1];"
+        f"[v0][v1]concat=n=2:v=1:a=0,setsar=1,settb=AVTB[vbase];"
         f"[vbase]{_subtitle_filter(subtitles_path)}[vout]"
     )
 
@@ -107,7 +112,7 @@ def render_all_scenes(
     subtitles_paths: dict[int, Path] | None = None,
 ) -> list[Path]:
     target_scenes = scenes[:PREVIEW_SCENE_LIMIT] if preview else scenes
-    width, height = (PREVIEW_WIDTH, PREVIEW_HEIGHT) if preview else (SETTINGS.width, SETTINGS.height)
+    width, height = VIDEO_WIDTH, VIDEO_HEIGHT
     max_workers = min(SETTINGS.max_render_workers, len(target_scenes)) or 1
 
     results: dict[int, Path] = {}

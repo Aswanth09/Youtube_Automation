@@ -36,7 +36,10 @@ class TextOverlay(BaseModel):
 class Scene(BaseModel):
     scene_id: int = Field(..., ge=1, le=7)
     narration: str = Field(...)
-    micro_reveal: str = Field(default="Key detail")
+    micro_reveal: str = Field(
+        ..., min_length=5,
+        description="Specific factual detail, number, or plot reveal for this beat",
+    )
     pacing_weight: Literal["calm", "urgent"] = "urgent"
     broll_keywords: list[str] = Field(..., min_length=2, max_length=4)
     motion: Motion = Field(default_factory=Motion)
@@ -74,7 +77,10 @@ class Scene(BaseModel):
 class VideoMetadata(BaseModel):
     youtube_title: str = Field(..., max_length=150)
     youtube_description_base: str
-    youtube_tags: list[str] = Field(default_factory=list, min_length=5, max_length=10)
+    youtube_tags: list[str] = Field(
+        ..., min_length=5, max_length=10,
+        description="5 to 10 relevant YouTube tags",
+    )
 
     @field_validator("youtube_tags", mode="before")
     @classmethod
