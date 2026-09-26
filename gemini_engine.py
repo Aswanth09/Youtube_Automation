@@ -62,10 +62,10 @@ Keep total output under 600 words.
 """
 
 STAGE2_PROMPT_TEMPLATE = """\
-You are the lead writer and visual director for a high-retention YouTube Shorts channel
-covering business and tech collapses. Write a 50-65 second Short: fast, cinematic,
-psychologically sharp, specific, and built to replay. Every scene must advance the
-investigation and leave the viewer needing the next beat.
+You are the lead writer and visual director for a US YouTube Shorts channel. Write a
+65-72 second psychological thriller in the high-tension documentary style of
+MagnatesMedia and ColdFusion: visceral, paranoid, cinematic, and built to replay.
+Every scene must escalate the investigation and make the next cut feel unavoidable.
 
 CRITICAL CONSTRAINT: Use ONLY the facts, dates, numbers, and names provided in the
 VERIFIED_FACTS block below. Do not introduce any date, dollar figure, statistic, or named
@@ -75,26 +75,26 @@ VERIFIED_FACTS:
 {fact_brief}
 
 STRUCTURE:
-- Output 5-7 scene objects with sequential scene_id starting at 1.
-- Target 130-160 words total. Scene 1 is the 0-3 second hook; scenes 2-5 escalate
-    self-dealing, secret memos, burn rates, and ignored red flags; the final scene delivers
-    the collapse and channel stinger.
+- Output exactly 6 scene objects with sequential scene_id starting at 1.
+- STRICT LENGTH: 150-180 words total across 6 scenes (~60-70 seconds runtime). Scene 1
+    is the 0-3 second hook; scenes 2-5 accelerate through hubris, deception, secret
+    backdoors, and the sudden 72-hour bank run; scene 6 is the payoff and loop.
 
 RETENTION REQUIREMENTS:
-- Scene 1 must contain exactly 8-12 words and begin with a high-stakes financial contrast
-    or paradox. Withhold the company name until scene 2. Scene 1 must include a centered
-    stat-card `text_overlay` such as "$47,000,000,000 → $0"; stagger it with the voiceover
-    and do not repeat the narration word-for-word in the overlay.
-- Scenes 2-7 must contain exactly 20-26 words each. Use escalating psychological tension:
-    self-dealing, secret memos, loans against stock, shocking figures, status, incentives,
-    and warning signs that sophisticated investors ignored. Avoid repetitive "In [date], X"
-    sentence openings and dry corporate reporting.
-- The final scene must echo the opening metric or contrast to create an endless loop and
+- Scene 1 must contain exactly 10-14 words. Open with a visceral visual metaphor and
+    dollar loss before revealing the entity name. Withhold the name until scene 2 and
+    include a centered stat-card overlay such as "$32,000,000,000 -> ZERO".
+- Scenes 2-5 should target 25-30 words each, using fast escalation through hubris,
+    deception, secret backdoors, hidden incentives, and the sudden 72-hour bank run.
+    Avoid dry reporting and repetitive "In [date], X" sentence openings.
+- Scene 6 must echo the opening hook's metric or question to create an endless loop and
     must end with this exact sentence: "Follow for the next collapse."
 - Every scene's `micro_reveal` must name one specific verified fact, red flag, or figure.
-- Use "urgent" pacing by default. Return 2-3 distinct, ranked, motion-heavy cinematic
-    B-roll queries per scene, such as "fast modern skyscrapers time lapse night", "tense
-    trading floor", or "empty luxury boardroom dusk". Do not use generic filler queries.
+- Use "urgent" pacing by default. Return exactly 2 or 3 distinct, ranked, motion-heavy
+    metaphorical stock queries per scene. Strictly avoid abstract corporate terms such as
+    "office" and "crypto chart". Demand images like "man holding head in hands dark room",
+    "flashing red server rack", "counting cash rapid motion", "luxury sports car city night",
+    "shattered glass floor", and "empty boardroom rain outside".
 - Set `is_payoff_beat` true for major reveal scenes and use centered stat-card overlays
     when a verified figure needs visual emphasis.
 
@@ -112,7 +112,7 @@ STAGE2_JSON_EXAMPLE = """\
     "scenes": [
         {
             "scene_id": 1,
-            "narration": "Forty-seven billion dollars. Then, ninety days later, absolutely nothing.",
+            "narration": "Forty-seven billion dollars vanished. Then, ninety days later, absolutely nothing remained.",
             "micro_reveal": "Peak valuation vs total collapse",
             "pacing_weight": "urgent",
             "broll_keywords": ["empty office lobby", "shattered glass falling", "dark skyscrapers night"],
@@ -122,7 +122,7 @@ STAGE2_JSON_EXAMPLE = """\
         },
         {
             "scene_id": 2,
-            "narration": "This was not a standard market crash. This was WeWork, an empire built on charismatic storytelling that seduced the smartest venture capitalists on Earth.",
+            "narration": "This was not a standard market crash. This was WeWork, an empire built on charismatic storytelling that seduced the smartest venture capitalists on Earth while everyone applauded the illusion.",
             "micro_reveal": "WeWork communal workspace movement pitch",
             "pacing_weight": "urgent",
             "broll_keywords": ["modern startup office", "investor meeting room", "city skyline time lapse"],
@@ -132,7 +132,7 @@ STAGE2_JSON_EXAMPLE = """\
         },
         {
             "scene_id": 3,
-            "narration": "SoftBank alone pumped over ten billion dollars into the furnace, pricing an ordinary real estate subleasing company higher than the world's largest commercial airlines.",
+            "narration": "SoftBank alone pumped over ten billion dollars into the furnace, pricing an ordinary real estate subleasing company higher than the world's largest commercial airlines while risk warnings disappeared behind euphemisms.",
             "micro_reveal": "SoftBank massive capital infusions and high valuation",
             "pacing_weight": "urgent",
             "broll_keywords": ["currency stacks", "luxury penthouse dusk", "financial stock chart falling"],
@@ -142,7 +142,7 @@ STAGE2_JSON_EXAMPLE = """\
         },
         {
             "scene_id": 4,
-            "narration": "Behind closed doors, Adam Neumann trademarked the common word 'We' and charged his own cash-strapped company six million dollars just to use it.",
+            "narration": "Behind closed doors, Adam Neumann trademarked the common word 'We' and charged his own cash-strapped company six million dollars just to use it while investors were told it represented culture.",
             "micro_reveal": "Company paid Neumann $6 million for the 'We' trademark",
             "pacing_weight": "urgent",
             "broll_keywords": ["legal contract signing", "money transfer digital", "boardroom argument"],
@@ -152,7 +152,7 @@ STAGE2_JSON_EXAMPLE = """\
         },
         {
             "scene_id": 5,
-            "narration": "Even worse, he took personal loans against company stock to purchase commercial buildings, then leased those exact properties right back to WeWork for massive private profit.",
+            "narration": "Even worse, he took personal loans against company stock to purchase commercial buildings, then leased those exact properties right back to WeWork for massive private profit, and nobody stopped the transaction.",
             "micro_reveal": "2019 S-1 filing revealed massive lease liabilities",
             "pacing_weight": "urgent",
             "broll_keywords": ["red financial spreadsheet", "anxious investor phone call", "courtroom gavel"],
@@ -162,7 +162,7 @@ STAGE2_JSON_EXAMPLE = """\
         },
         {
             "scene_id": 6,
-            "narration": "The S-1 filing revealed two billion in losses and forty-seven billion in lease liabilities. Forty-seven billion erased in weeks. Follow for the next collapse.",
+            "narration": "The S-1 filing revealed two billion in losses and forty-seven billion in lease liabilities. Forty-seven billion erased in weeks before the lights went out completely in one brutal weekend. Follow for the next collapse.",
             "micro_reveal": "Chapter 11 bankruptcy filing and final collapse",
             "pacing_weight": "urgent",
             "broll_keywords": ["closing office doors", "empty corporate building night", "bankruptcy sign"],
@@ -310,12 +310,12 @@ def _validate_stage2_constraints(plan: ProjectPlan) -> None:
         raise ValueError(f"Short plan must contain 5-7 scenes, got {len(plan.scenes)}")
 
     total_words = sum(len(scene.narration.split()) for scene in plan.scenes)
-    if not 130 <= total_words <= 160:
-        raise ValueError(f"Short script must contain 130-160 words, got {total_words}")
+    if not 145 <= total_words <= 190:
+        raise ValueError(f"Short script must contain 145-190 words, got {total_words}")
 
     for scene in plan.scenes:
         word_count = len(scene.narration.split())
-        lower, upper = (8, 12) if scene.scene_id == 1 else (20, 26)
+        lower, upper = (8, 14) if scene.scene_id == 1 else (20, 35)
         if not lower <= word_count <= upper:
             raise ValueError(
                 f"Scene {scene.scene_id} narration must contain {lower}-{upper} words, got {word_count}"

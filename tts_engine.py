@@ -61,7 +61,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Arial,56,&H0000FFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,5,2,8,40,40,800,1
+Style: Default,Arial,62,&H0000FFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,5,2,8,40,40,850,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -95,7 +95,6 @@ async def _synthesize(text: str, out_path: Path, voice: str) -> Path:
             submaker.create_sub((message["offset"], message.get("duration", 0)), word)
             word_boundaries.append((start, end, word))
 
-    submaker.generate_subs()
     subtitle_path = out_path.with_name(out_path.name.replace("audio_", "subs_", 1).rsplit(".", 1)[0] + ".ass")
     _write_ass(subtitle_path, word_boundaries)
     return subtitle_path

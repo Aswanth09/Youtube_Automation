@@ -39,6 +39,7 @@ def main() -> None:
         if not (
             state.scene_assets.get(s.scene_id)
             and state.scene_assets[s.scene_id].audio_path
+            and state.scene_assets[s.scene_id].subtitles_path
             and (
                 state.scene_assets[s.scene_id].broll_paths
                 or state.scene_assets[s.scene_id].broll_path
@@ -50,7 +51,7 @@ def main() -> None:
 
     audio_data = {sid: (Path(sa.audio_path), sa.duration) for sid, sa in state.scene_assets.items()}
     broll_paths = {
-        sid: Path(next(path for path in (sa.broll_paths or [sa.broll_path]) if path))
+        sid: [Path(path) for path in (sa.broll_paths or [sa.broll_path]) if path]
         for sid, sa in state.scene_assets.items()
     }
     subtitles_paths = {}

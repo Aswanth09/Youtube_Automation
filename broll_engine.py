@@ -20,6 +20,7 @@ every candidate for a keyword before giving up on it.
 from __future__ import annotations
 
 import logging
+import http.client
 import sqlite3
 import time
 from pathlib import Path
@@ -32,6 +33,12 @@ log = logging.getLogger(__name__)
 
 PEXELS_SEARCH_URL = "https://api.pexels.com/videos/search"
 DEDUP_LOOKBACK_VIDEOS = 5  # deprioritize clips used in the last N videos channel-wide
+NETWORK_RETRY_EXCEPTIONS = (
+    requests.exceptions.ConnectionError,
+    requests.exceptions.Timeout,
+    http.client.RemoteDisconnected,
+)
+MAX_NETWORK_ATTEMPTS = 3
 
 
 def _connect() -> sqlite3.Connection:
@@ -113,20 +120,33 @@ def _pexels_fetch_candidates(keyword: str) -> list[dict]:
     """Return portrait candidates, falling back to landscape when empty."""
     headers = {"Authorization": SETTINGS.pexels_api_key}
     for orientation in ("portrait", "landscape"):
-        _rate_limiter.wait()
-        resp = requests.get(
-            PEXELS_SEARCH_URL,
-            headers=headers,
-            params={
-                "query": keyword,
-                "orientation": orientation,
-                "size": "large",
-                "per_page": 5,
-            },
-            timeout=20,
-        )
-        resp.raise_for_status()
-        videos = resp.json().get("videos", [])
+        for attempt in range(1, MAX_NETWORK_ATTEMPTS + 1):
+            _rate_limiter.wait()
+            try:
+                resp = requests.get(
+                    PEXELS_SEARCH_URL,
+                    headers=headers,
+                    params={
+                        "query": keyword,
+                        "orientation": orientation,
+                        "size": "large",
+                        "per_page": 5,
+                    },
+                    timeout=20,
+                )
+                resp.raise_for_status()
+                videos = resp.json().get("videos", [])
+                break
+            except NETWORK_RETRY_EXCEPTIONS:
+                if attempt == MAX_NETWORK_ATTEMPTS:
+                    raise
+                backoff = 2 * attempt
+                log.warning(
+                    "Pexels connection reset on query '%s', retrying in %ds...",
+                    keyword,
+                    backoff,
+                )
+                time.sleep(backoff)
         if videos:
             return videos
         if orientation == "portrait":
@@ -134,27 +154,55 @@ def _pexels_fetch_candidates(keyword: str) -> list[dict]:
     return []
 
 
-def _download_clip(video: dict, dest_dir: Path) -> tuple[str, Path, int, int]:
+def _download_clip(
+    video: dict, dest_dir: Path, output_name: str | None = None,
+) -> tuple[str, Path, int, int]:
     files = sorted(
         (f for f in video["video_files"] if f.get("width")),
         key=lambda f: f["width"], reverse=True,
     )
     best = files[0]
     clip_id = str(video["id"])
-    out_path = dest_dir / f"{clip_id}.mp4"
+    out_path = dest_dir / (output_name or f"{clip_id}.mp4")
 
     if not out_path.exists():
-        r = requests.get(best["link"], timeout=60, stream=True)
-        r.raise_for_status()
-        with open(out_path, "wb") as f:
-            for chunk in r.iter_content(chunk_size=1 << 20):
-                f.write(chunk)
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        temporary_path = out_path.with_name(f"{out_path.name}.part")
+        for attempt in range(1, MAX_NETWORK_ATTEMPTS + 1):
+            response = None
+            try:
+                response = requests.get(best["link"], timeout=60, stream=True)
+                response.raise_for_status()
+                with temporary_path.open("wb") as output:
+                    for chunk in response.iter_content(chunk_size=1 << 20):
+                        if chunk:
+                            output.write(chunk)
+                temporary_path.replace(out_path)
+                break
+            except NETWORK_RETRY_EXCEPTIONS:
+                temporary_path.unlink(missing_ok=True)
+                if attempt == MAX_NETWORK_ATTEMPTS:
+                    raise
+                backoff = 2 * attempt
+                log.warning(
+                    "B-roll download for clip %s disconnected, retrying in %ds...",
+                    clip_id,
+                    backoff,
+                )
+                time.sleep(backoff)
+            finally:
+                if response is not None:
+                    response.close()
 
     return clip_id, out_path, best["width"], best["height"]
 
 
 def resolve_clip_for_scene(
-    video_id: str, keywords: list[str], used_this_video: set[str], dest_dir: Path
+    video_id: str,
+    keywords: list[str],
+    used_this_video: set[str],
+    dest_dir: Path,
+    output_name: str | None = None,
 ) -> Path:
     """Try each ranked keyword in order. For each keyword: local cache
     first (excluding already-used clips), then walk EVERY Pexels candidate
@@ -167,6 +215,7 @@ def resolve_clip_for_scene(
             if hit:
                 clip_id, path = hit
                 _register_usage(conn, video_id, clip_id)
+                used_this_video.add(clip_id)
                 return path
 
         for keyword in keywords:
@@ -179,13 +228,14 @@ def resolve_clip_for_scene(
                     # giving up on it entirely
                     continue
 
-                clip_id, path, w, h = _download_clip(video, dest_dir)
+                clip_id, path, w, h = _download_clip(video, dest_dir, output_name)
                 conn.execute(
                     "INSERT OR IGNORE INTO stock_clips (clip_id, query, local_path, width, height) "
                     "VALUES (?, ?, ?, ?, ?)",
                     (clip_id, keyword, str(path), w, h),
                 )
                 _register_usage(conn, video_id, clip_id)
+                used_this_video.add(clip_id)
                 return path
             # every candidate for this keyword was already used somewhere --
             # only now move on to the next ranked keyword
@@ -219,11 +269,19 @@ def resolve_all_broll(
     paths: dict[int, list[Path]] = {}
 
     for scene in scenes:
-        duration = (durations or {}).get(scene.scene_id)
-        clip_count = 2 if duration is not None and duration > 8 else 1
+        if len(scene.broll_keywords) < 2:
+            raise RuntimeError(f"Scene {scene.scene_id} needs at least two B-roll keywords")
+
         scene_paths: list[Path] = []
-        for _ in range(clip_count):
-            path = resolve_clip_for_scene(video_id, scene.broll_keywords, used_this_video, dest_dir)
+        for index, keyword in enumerate(scene.broll_keywords[:2]):
+            suffix = "a" if index == 0 else "b"
+            path = resolve_clip_for_scene(
+                video_id,
+                [keyword],
+                used_this_video,
+                dest_dir,
+                output_name=f"clip_{scene.scene_id:03d}_{suffix}.mp4",
+            )
             used_this_video.add(path.stem)
             scene_paths.append(path)
         paths[scene.scene_id] = scene_paths

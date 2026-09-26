@@ -112,12 +112,12 @@ class ProjectPlan(BaseModel):
     @model_validator(mode="after")
     def validate_short_script(self) -> "ProjectPlan":
         total_words = sum(len(scene.narration.split()) for scene in self.scenes)
-        if not 130 <= total_words <= 160:
-            raise ValueError(f"Short script must contain 130-160 words, got {total_words}")
+        if not 145 <= total_words <= 190:
+            raise ValueError(f"Short script must contain 145-190 words, got {total_words}")
 
         for scene in self.scenes:
             word_count = len(scene.narration.split())
-            lower, upper = (8, 12) if scene.scene_id == 1 else (20, 26)
+            lower, upper = (8, 14) if scene.scene_id == 1 else (20, 35)
             if not lower <= word_count <= upper:
                 raise ValueError(
                     f"Scene {scene.scene_id} narration must contain {lower}-{upper} words, got {word_count}"

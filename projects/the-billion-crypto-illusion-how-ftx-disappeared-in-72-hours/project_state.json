@@ -1,0 +1,201 @@
+{
+  "topic": "The  Billion Crypto Illusion: How FTX Disappeared in 72 Hours",
+  "slug": "the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours",
+  "created_at": "2026-09-25T06:25:31.142106+00:00",
+  "fact_brief": "KEY_FACTS:\n- FTX was a major centralized cryptocurrency exchange founded by Sam Bankman-Fried that collapsed due to a liquidity crisis caused by the misappropriation of customer funds.\n- Alameda Research, a sister hedge fund also founded by Bankman-Fried, utilized FTX customer deposits to cover its own failing investments and trading losses.\n- The crisis was triggered after a leaked balance sheet showed Alameda’s assets were heavily concentrated in FTT, an illiquid utility token issued by FTX.\n- Binance CEO Changpeng Zhao publicly announced the liquidation of Binance's FTT holdings on November 6, 2022, prompting a massive bank run on FTX.\n- FTX filed for Chapter 11 bankruptcy protection on November 11, 2022, revealing a multi-billion dollar hole in its accounts.\n- Subsequent investigations uncovered that FTX lacked a functioning board of directors and utilized QuickBooks for accounting purposes.\n\nTIMELINE:\n- 2019-05: FTX is officially launched by Sam Bankman-Fried and Gary Wang.\n- 2022-01: FTX reaches a $32 billion valuation following a $400 million Series C funding round.\n- 2022-11-02: Coindesk publishes a leaked report highlighting that a majority of Alameda Research’s assets are held in FTT tokens.\n- 2022-11-06: Changpeng Zhao announces Binance will sell its remaining FTT tokens, causing the price to plummet and sparking a mass withdrawal of funds.\n- 2022-11-08: FTX halts all withdrawals after failing to secure emergency rescue capital.\n- 2022-11-11: FTX, Alameda Research, and over 100 affiliated entities file for bankruptcy.\n\nNUMBERS:\n- Peak Valuation: $32B\n- Total Venture Funding: $1.8B\n- Estimated Customer Shortfall: $8.9B\n- Sentence of Sam Bankman-Fried: 25 years in federal prison\n\nKEY_PEOPLE:\n- Sam Bankman-Fried -- Co-founder and former CEO of FTX who directed the diversion of customer funds to Alameda Research.\n- Caroline Ellison -- CEO of Alameda Research who pleaded guilty to fraud charges and testified against Bankman-Fried.\n- John J. Ray III -- Turnaround specialist appointed as CEO of FTX during bankruptcy to oversee liquidation and recovery efforts.\n- Gary Wang -- Co-founder and former CTO of FTX who assisted in writing the code that granted Alameda special exemptions on the exchange.\n\nRED_FLAGS_AND_REVEALS:\n- FTX operated for years without a dedicated risk management department or a professional board of directors.\n- Internal code allowed Alameda Research to maintain a negative balance on FTX, effectively granting it an unlimited line of credit using customer assets.\n- External audits were performed by firms with limited experience in crypto, and the exchange refused to provide a consolidated financial statement.\n- Bankman-Fried maintained a \"backdoor\" in the software that allowed for the transfer of funds without triggering internal compliance alerts.\n- Despite claims of being an independent exchange, FTX and Alameda Research shared the same office space, legal counsel, and administrative staff in the Bahamas.\n- Executives used company funds to purchase over $200 million in luxury real estate in the Bahamas, often titled in the names of employees or parents.",
+  "plan": {
+    "scenes": [
+      {
+        "scene_id": 1,
+        "narration": "Thirty-two billion dollars vanished in hours. The total collapse of FTX is here.",
+        "micro_reveal": "FTX peak valuation vs collapse",
+        "pacing_weight": "urgent",
+        "broll_keywords": [
+          "shattered glass floor",
+          "empty boardroom rain outside",
+          "dark skyscrapers night"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "urgent"
+        },
+        "text_overlay": {
+          "text": "$32,000,000,000 → ZERO",
+          "position": "center"
+        },
+        "is_payoff_beat": true
+      },
+      {
+        "scene_id": 2,
+        "narration": "Sam Bankman-Fried built an empire on a lie. Using internal code, he granted his hedge fund, Alameda Research, an unlimited line of credit directly from customer deposits.",
+        "micro_reveal": "Alameda Research secret backdoor code",
+        "pacing_weight": "urgent",
+        "broll_keywords": [
+          "flashing red server rack",
+          "man holding head in hands dark room"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "urgent"
+        },
+        "text_overlay": null,
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 3,
+        "narration": "The facade shattered when a leaked balance sheet exposed assets tied to FTT. On November 6, 2022, a massive bank run began, draining liquidity faster than they could hide.",
+        "micro_reveal": "FTT token concentration causing bank run",
+        "pacing_weight": "urgent",
+        "broll_keywords": [
+          "counting cash rapid motion",
+          "burning paper falling"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "urgent"
+        },
+        "text_overlay": {
+          "text": "Bank Run: 11/06/2022",
+          "position": "center"
+        },
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 4,
+        "narration": "Audit trails were non-existent. Without a board of directors, management used simple accounting software to funnel eight point nine billion dollars into luxury real estate and failed trades.",
+        "micro_reveal": "FTX used QuickBooks for accounting",
+        "pacing_weight": "urgent",
+        "broll_keywords": [
+          "luxury sports car city night",
+          "typing on laptop frantic"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "urgent"
+        },
+        "text_overlay": {
+          "text": "$8.9B Shortfall",
+          "position": "center"
+        },
+        "is_payoff_beat": true
+      },
+      {
+        "scene_id": 5,
+        "narration": "By November 11, 2022, the bankruptcy filings revealed the scale of the deceit. Bankman-Fried's twenty-five year sentence is merely the closing chapter of this systemic and calculated betrayal.",
+        "micro_reveal": "Sam Bankman-Fried 25 year sentence",
+        "pacing_weight": "urgent",
+        "broll_keywords": [
+          "courtroom gavel",
+          "prison cell door locking"
+        ],
+        "motion": {
+          "direction": "in",
+          "speed": "urgent"
+        },
+        "text_overlay": {
+          "text": "25 Year Sentence",
+          "position": "center"
+        },
+        "is_payoff_beat": false
+      },
+      {
+        "scene_id": 6,
+        "narration": "How did billions disappear without anyone stopping the machine? The systemic failure of FTX redefined the cost of greed. Follow for the next collapse.",
+        "micro_reveal": "Systemic failure of FTX",
+        "pacing_weight": "urgent",
+        "broll_keywords": [
+          "empty boardroom rain outside",
+          "shattered glass floor"
+        ],
+        "motion": {
+          "direction": "out",
+          "speed": "urgent"
+        },
+        "text_overlay": null,
+        "is_payoff_beat": true
+      }
+    ],
+    "suggested_music_mood": "dark_suspense",
+    "metadata": {
+      "youtube_title": "The $32 Billion FTX Heist: How It All Collapsed #Shorts",
+      "youtube_description_base": "An investigative look at the collapse of FTX. From a $32 billion valuation to a massive $8.9 billion hole, discover the red flags, the secret backdoors, and the systemic greed that brought the exchange down.",
+      "youtube_tags": [
+        "#Shorts",
+        "FTX",
+        "Sam Bankman-Fried",
+        "Crypto Collapse",
+        "Financial Crime",
+        "Documentary"
+      ]
+    }
+  },
+  "scene_assets": {
+    "1": {
+      "audio_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\audio\\audio_001.mp3",
+      "subtitles_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\audio\\subs_001.ass",
+      "duration": 6.6,
+      "broll_paths": [
+        "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_001_a.mp4",
+        "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_001_b.mp4"
+      ],
+      "broll_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_001_a.mp4",
+      "rendered_scene_path": null
+    },
+    "2": {
+      "audio_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\audio\\audio_002.mp3",
+      "subtitles_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\audio\\subs_002.ass",
+      "duration": 12.166666666666666,
+      "broll_paths": [
+        "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_002_a.mp4",
+        "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_002_b.mp4"
+      ],
+      "broll_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_002_a.mp4",
+      "rendered_scene_path": null
+    },
+    "3": {
+      "audio_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\audio\\audio_003.mp3",
+      "subtitles_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\audio\\subs_003.ass",
+      "duration": 13.066666666666666,
+      "broll_paths": [
+        "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_003_a.mp4",
+        "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_003_b.mp4"
+      ],
+      "broll_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_003_a.mp4",
+      "rendered_scene_path": null
+    },
+    "4": {
+      "audio_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\audio\\audio_004.mp3",
+      "subtitles_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\audio\\subs_004.ass",
+      "duration": 12.166666666666666,
+      "broll_paths": [
+        "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_004_a.mp4",
+        "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_004_b.mp4"
+      ],
+      "broll_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_004_a.mp4",
+      "rendered_scene_path": null
+    },
+    "5": {
+      "audio_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\audio\\audio_005.mp3",
+      "subtitles_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\audio\\subs_005.ass",
+      "duration": 13.066666666666666,
+      "broll_paths": [
+        "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_005_a.mp4",
+        "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_005_b.mp4"
+      ],
+      "broll_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_005_a.mp4",
+      "rendered_scene_path": null
+    },
+    "6": {
+      "audio_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\audio\\audio_006.mp3",
+      "subtitles_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\audio\\subs_006.ass",
+      "duration": 11.1,
+      "broll_paths": [
+        "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_006_a.mp4",
+        "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_006_b.mp4"
+      ],
+      "broll_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\raw_footage\\clip_006_a.mp4",
+      "rendered_scene_path": null
+    }
+  },
+  "final_output_path": "D:\\pipeline\\projects\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours\\final_output\\the-billion-crypto-illusion-how-ftx-disappeared-in-72-hours_final.mp4"
+}
