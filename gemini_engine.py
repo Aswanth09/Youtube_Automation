@@ -81,6 +81,22 @@ STRUCTURE:
     backdoors, and the sudden 72-hour bank run; scene 6 is the payoff and loop.
 
 RETENTION REQUIREMENTS:
+- STRICT SENTENCE OPENING RULES (NO THROAT-CLEARING):
+    NEVER start any scene's sentence with a subject's name, company name, or passive
+    scene-setting clause (e.g., BANNED: 'Sam Bankman-Fried built...', 'Internal controls
+    were...', 'The collapse accelerated when...', 'John J. Ray took over...').
+    ALWAYS open with the shock: the raw number, the scandalous object, or the physical
+    action itself, THEN reveal who did it.
+    Favor punchy sentence fragments over compound sentences.
+    BAD: 'Internal controls were non-existent. Executives used QuickBooks to track billions.'
+    GOOD: 'A multi-billion dollar empire — tracked on QuickBooks. Plus an invisible backdoor
+    letting one hedge fund secretly drain customer deposits.'
+    BAD: 'The collapse accelerated when Binance announced it would sell its tokens.'
+    GOOD: 'Six billion dollars. Vanished in seventy-two hours. The moment a rival tweeted,
+    the bank run turned lethal.'
+    BAD: 'John J. Ray III took over, describing it as the worst failure he had ever seen.'
+    GOOD: 'Eight billion dollars, completely unaccounted for. The man brought in to clean up
+    Enron called this ten times worse.'
 - Scene 1 must contain exactly 10-14 words. Open with a visceral visual metaphor and
     dollar loss before revealing the entity name. Withhold the name until scene 2 and
     include a centered stat-card overlay such as "$32,000,000,000 -> ZERO".

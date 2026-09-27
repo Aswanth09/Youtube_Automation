@@ -95,6 +95,21 @@ async def _synthesize(text: str, out_path: Path, voice: str) -> Path:
             submaker.create_sub((message["offset"], message.get("duration", 0)), word)
             word_boundaries.append((start, end, word))
 
+    if not word_boundaries:
+        words = text.split()
+        if not words:
+            raise ValueError("Cannot create subtitles for empty narration")
+        total_duration = get_audio_duration(str(out_path))
+        word_duration = total_duration / len(words)
+        word_boundaries = [
+            (
+                index * word_duration,
+                (index + 1) * word_duration,
+                word,
+            )
+            for index, word in enumerate(words)
+        ]
+
     subtitle_path = out_path.with_name(out_path.name.replace("audio_", "subs_", 1).rsplit(".", 1)[0] + ".ass")
     _write_ass(subtitle_path, word_boundaries)
     return subtitle_path

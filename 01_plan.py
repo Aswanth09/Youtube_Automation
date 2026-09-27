@@ -25,7 +25,10 @@ WORDS_PER_MINUTE = 155  # rough Short pacing estimate for approximate descriptio
 
 def slugify(text: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
-    return slug[:60] or "video"
+    if len(slug) > 60:
+        truncated = slug[:60].rsplit("-", 1)[0]
+        slug = truncated or slug
+    return slug or "video"
 
 
 def estimate_timestamps(scenes: list) -> list[tuple[int, str]]:
@@ -56,12 +59,13 @@ def main() -> None:
 
     slug = slugify(args.topic)
     paths = project_paths(slug)
+    paths.ensure()
 
     log.info("Stage 1: grounded fact extraction for '%s'...", args.topic)
     fact_brief = stage1_fact_extraction(args.topic)
     log.info("Fact brief captured (%d words).", len(fact_brief.split()))
 
-    log.info("Stage 2: 50-65 second Short scene + metadata generation...")
+    log.info("Stage 2: 65-72 second Short scene + metadata generation...")
     plan = stage2_generate_scenes(fact_brief)
     log.info(
         "Generated %d scenes. Music mood: %s. Title: %s",

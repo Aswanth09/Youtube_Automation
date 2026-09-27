@@ -108,6 +108,7 @@ class ProjectPaths:
         return self.root / "metadata.json"
 
     def ensure(self) -> "ProjectPaths":
+        self.root.mkdir(parents=True, exist_ok=True)
         for d in (self.audio, self.raw_footage, self.intermediate_scenes, self.final_output):
             d.mkdir(parents=True, exist_ok=True)
         return self

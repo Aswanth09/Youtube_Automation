@@ -39,6 +39,19 @@ NETWORK_RETRY_EXCEPTIONS = (
     http.client.RemoteDisconnected,
 )
 MAX_NETWORK_ATTEMPTS = 3
+EMERGENCY_FALLBACK_QUERIES = [
+    "dark office building night",
+    "stock market screen red",
+    "bank vault door",
+    "frantic typing computer keyboard",
+    "corporate skyscraper night",
+    "financial documents paper",
+]
+QUERY_MODIFIERS = {
+    "after", "blinking", "closing", "dark", "empty", "falling", "fast",
+    "frantic", "glass", "hands", "head", "holding", "hours", "night",
+    "rapid", "rapidly", "red", "shattered", "stressed",
+}
 
 
 def _connect() -> sqlite3.Connection:
@@ -116,6 +129,22 @@ def _local_cache_lookup(conn: sqlite3.Connection, keyword: str, exclude_ids: set
     return None
 
 
+def _simplified_query_variants(keyword: str) -> list[str]:
+    words = keyword.split()
+    variants = []
+    for phrase in (words[:3], words[1:4] if len(words) > 3 else []):
+        simplified = " ".join(phrase).strip()
+        if len(phrase) >= 2 and simplified.casefold() != keyword.casefold():
+            variants.append(simplified)
+
+    core_words = [word for word in words if word.casefold() not in QUERY_MODIFIERS]
+    core_phrase = " ".join(core_words)
+    if len(core_words) >= 2 and core_phrase.casefold() != keyword.casefold():
+        variants.append(core_phrase)
+
+    return list(dict.fromkeys(variants))
+
+
 def _pexels_fetch_candidates(keyword: str) -> list[dict]:
     """Return portrait candidates, falling back to landscape when empty."""
     headers = {"Authorization": SETTINGS.pexels_api_key}
@@ -158,7 +187,7 @@ def _download_clip(
     video: dict, dest_dir: Path, output_name: str | None = None,
 ) -> tuple[str, Path, int, int]:
     files = sorted(
-        (f for f in video["video_files"] if f.get("width")),
+        (f for f in video["video_files"] if f.get("width") and f.get("link")),
         key=lambda f: f["width"], reverse=True,
     )
     best = files[0]
@@ -204,43 +233,53 @@ def resolve_clip_for_scene(
     dest_dir: Path,
     output_name: str | None = None,
 ) -> Path:
-    """Try each ranked keyword in order. For each keyword: local cache
-    first (excluding already-used clips), then walk EVERY Pexels candidate
-    for that keyword before falling through to the next keyword."""
+    """Try original, simplified, then emergency queries with clip dedup."""
     with _connect() as conn:
         exclude = used_this_video | _recently_used_clip_ids(conn)
 
+        query_sequence = []
         for keyword in keywords:
-            hit = _local_cache_lookup(conn, keyword, exclude)
+            query_sequence.append(keyword)
+            query_sequence.extend(_simplified_query_variants(keyword))
+        query_sequence.extend(EMERGENCY_FALLBACK_QUERIES)
+
+        for query in dict.fromkeys(query_sequence):
+            hit = _local_cache_lookup(conn, query, exclude)
             if hit:
                 clip_id, path = hit
                 _register_usage(conn, video_id, clip_id)
+                exclude.add(clip_id)
                 used_this_video.add(clip_id)
                 return path
 
-        for keyword in keywords:
-            candidates = _pexels_fetch_candidates(keyword)
+            candidates = _pexels_fetch_candidates(query)
             for video in candidates:
                 clip_id = str(video["id"])
                 if clip_id in exclude:
-                    # this specific candidate was already used -- try the
-                    # next-ranked candidate for the SAME keyword before
-                    # giving up on it entirely
+                    continue
+
+                downloadable_files = [
+                    file for file in video.get("video_files", [])
+                    if file.get("width") and file.get("link")
+                ]
+                if not downloadable_files:
                     continue
 
                 clip_id, path, w, h = _download_clip(video, dest_dir, output_name)
                 conn.execute(
                     "INSERT OR IGNORE INTO stock_clips (clip_id, query, local_path, width, height) "
                     "VALUES (?, ?, ?, ?, ?)",
-                    (clip_id, keyword, str(path), w, h),
+                    (clip_id, query, str(path), w, h),
                 )
                 _register_usage(conn, video_id, clip_id)
+                exclude.add(clip_id)
                 used_this_video.add(clip_id)
                 return path
-            # every candidate for this keyword was already used somewhere --
-            # only now move on to the next ranked keyword
 
-    raise RuntimeError(f"No B-roll found for keywords {keywords} (all candidates exhausted)")
+    raise RuntimeError(
+        f"No B-roll found for keywords {keywords} or emergency fallback queries "
+        f"{EMERGENCY_FALLBACK_QUERIES} (all candidates empty, unusable, or already consumed)"
+    )
 
 
 def _register_usage(conn: sqlite3.Connection, video_id: str, clip_id: str) -> None:
