@@ -5,6 +5,42 @@ from typing import Any, List, Literal, Optional
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 MusicMood = Literal["corporate_tension", "dark_suspense", "slow_investigation"]
+Speaker = Literal["alice", "bob"]
+
+
+class Beat(BaseModel):
+    beat_id: int = Field(..., ge=1)
+    speaker: Speaker
+    line: str = Field(...)
+    broll_keywords: list[str] = Field(..., min_length=2, max_length=2)
+
+    @field_validator("line")
+    @classmethod
+    def validate_line_length(cls, value: str) -> str:
+        words = len(value.split())
+        if not 8 <= words <= 18:
+            raise ValueError(f"beat line must contain 8-18 words, got {words}")
+        return value
+
+    @field_validator("broll_keywords")
+    @classmethod
+    def validate_distinct_keywords(cls, value: list[str]) -> list[str]:
+        if len({keyword.strip().casefold() for keyword in value}) != len(value):
+            raise ValueError("each beat requires two distinct B-roll queries")
+        return value
+
+    @property
+    def scene_id(self) -> int:
+        return self.beat_id
+
+    @property
+    def narration(self) -> str:
+        return self.line
+
+
+class MusicQuery(BaseModel):
+    mood: Literal["dark_suspense", "corporate_tension", "investigative_fast", "tech_panic"]
+    tempo: Literal["medium", "fast"]
 
 
 class Motion(BaseModel):
@@ -93,7 +129,9 @@ class VideoMetadata(BaseModel):
 
 
 class ProjectPlan(BaseModel):
-    scenes: list[Scene] = Field(..., min_length=5, max_length=7)
+    beats: list[Beat] | None = Field(default=None, min_length=8, max_length=12)
+    music: MusicQuery | None = None
+    scenes: list[Scene] | None = Field(default=None, min_length=5, max_length=7)
     suggested_music_mood: MusicMood = "corporate_tension"
     metadata: VideoMetadata
 
@@ -108,24 +146,39 @@ class ProjectPlan(BaseModel):
                 return "slow_investigation"
         return "corporate_tension"
 
-    @field_validator("scenes")
-    @classmethod
-    def reindex_scenes(cls, v: list[Scene]) -> list[Scene]:
-        for i, s in enumerate(v, 1):
-            s.scene_id = i
-        return v
-
     @model_validator(mode="after")
-    def validate_short_script(self) -> "ProjectPlan":
+    def validate_plan_shape(self) -> "ProjectPlan":
+        if self.beats is not None:
+            if self.music is None:
+                raise ValueError("dual-host plans require a music query")
+            if not 8 <= len(self.beats) <= 12:
+                raise ValueError(f"dual-host plans require 8-12 beats, got {len(self.beats)}")
+            if self.beats[0].speaker != "alice":
+                raise ValueError("the opening hook beat must be spoken by Alice")
+            for previous, current in zip(self.beats, self.beats[1:]):
+                if current.speaker == previous.speaker:
+                    raise ValueError("dual-host beats must alternate Alice and Bob")
+            beat_ids = [beat.beat_id for beat in self.beats]
+            if beat_ids != list(range(1, len(self.beats) + 1)):
+                raise ValueError("beat_id values must be sequential starting at 1")
+            return self
+
+        if self.scenes is None:
+            raise ValueError("project plan requires either dual-host beats or legacy scenes")
+
         total_words = sum(len(scene.narration.split()) for scene in self.scenes)
         if not 145 <= total_words <= 190:
             raise ValueError(f"Short script must contain 145-190 words, got {total_words}")
-
-        for scene in self.scenes:
+        for index, scene in enumerate(self.scenes, 1):
+            scene.scene_id = index
             word_count = len(scene.narration.split())
-            lower, upper = (8, 14) if scene.scene_id == 1 else (20, 35)
+            lower, upper = (8, 14) if index == 1 else (20, 35)
             if not lower <= word_count <= upper:
                 raise ValueError(
-                    f"Scene {scene.scene_id} narration must contain {lower}-{upper} words, got {word_count}"
+                    f"Scene {index} narration must contain {lower}-{upper} words, got {word_count}"
                 )
         return self
+
+    @property
+    def timeline(self) -> list[Beat] | list[Scene]:
+        return self.beats if self.beats is not None else (self.scenes or [])

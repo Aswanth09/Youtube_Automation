@@ -1,0 +1,105 @@
+from __future__ import annotations
+
+import subprocess
+import tempfile
+import unittest
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
+
+from PIL import Image
+import imageio_ffmpeg
+import wave
+
+import config
+import render_engine
+from assemble import build_master_narration_wav
+from config import AUDIO_CHANNELS, SAMPLE_RATE
+
+
+class AvatarBootstrapTests(unittest.TestCase):
+    def test_missing_default_avatars_are_generated(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            avatar_dir = Path(temporary)
+            alice_path = avatar_dir / "alice.png"
+            bob_path = avatar_dir / "bob.png"
+            with (
+                patch.object(config, "AVATAR_DIR", avatar_dir),
+                patch.object(config, "AVATAR_ALICE", alice_path),
+                patch.object(config, "AVATAR_BOB", bob_path),
+            ):
+                alice, bob = config.ensure_default_avatars()
+
+            self.assertTrue(alice.is_file())
+            self.assertTrue(bob.is_file())
+            alice_image = Image.open(alice).convert("RGBA")
+            bob_image = Image.open(bob).convert("RGBA")
+            self.assertEqual(alice_image.size, (512, 512))
+            self.assertEqual(alice_image.getpixel((0, 0))[3], 0)
+            self.assertEqual(alice_image.getpixel((20, 256)), (217, 0, 255, 255))
+            self.assertEqual(bob_image.getpixel((20, 256)), (0, 212, 255, 255))
+
+
+class BeatFiltergraphTests(unittest.TestCase):
+    def test_filter_complex_script_parses_with_ffmpeg(self) -> None:
+        ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            ass_path = root / "subs_001.ass"
+            ass_path.write_text(
+                """[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,48,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,2,1,5,20,20,20,1
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:00.40,Default,,0,0,0,,TEST CAPTION
+""",
+                encoding="utf-8",
+            )
+            avatar_path = root / "avatar.png"
+            Image.new("RGBA", (64, 64), (255, 0, 255, 255)).save(avatar_path)
+            beat = SimpleNamespace(beat_id=1, speaker="alice")
+            graph = render_engine.build_beat_filtergraph(beat, 0.4, ass_path)
+            graph_path = root / "beat.ffgraph"
+            graph_path.write_text(graph, encoding="utf-8")
+
+            command = [
+                ffmpeg, "-v", "error", "-y",
+                "-f", "lavfi", "-i", "testsrc=size=180x320:rate=30:duration=0.4",
+                "-f", "lavfi", "-i", "testsrc2=size=180x320:rate=30:duration=0.4",
+                "-loop", "1", "-framerate", "30", "-i", str(avatar_path),
+                "-filter_complex_script", str(graph_path),
+                "-map", "[vout]", "-t", "0.4", "-f", "null", "NUL",
+            ]
+            subprocess.run(command, check=True, capture_output=True, text=True, timeout=90)
+            self.assertIn("setsar=1", graph)
+            self.assertIn("concat=n=2:v=1:a=0", graph)
+            self.assertIn("overlay=x=60:y=1320", graph)
+            self.assertIn("subtitles=", graph)
+            self.assertIn("force_style='Alignment=5,MarginV=0'", graph)
+
+    def test_master_narration_inserts_sample_accurate_gap(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            beat_paths = [root / "voice_a.wav", root / "voice_b.wav"]
+            for path, value in zip(beat_paths, (b"\x01\x00", b"\x02\x00")):
+                with wave.open(str(path), "wb") as audio:
+                    audio.setnchannels(AUDIO_CHANNELS)
+                    audio.setsampwidth(2)
+                    audio.setframerate(SAMPLE_RATE)
+                    audio.writeframes(value * 100 * AUDIO_CHANNELS)
+
+            master_path = build_master_narration_wav(beat_paths, root / "master.wav")
+            with wave.open(str(master_path), "rb") as master:
+                expected_gap_frames = SAMPLE_RATE * config.INTER_TURN_GAP_MS // 1000
+                self.assertEqual(master.getframerate(), SAMPLE_RATE)
+                self.assertEqual(master.getnchannels(), AUDIO_CHANNELS)
+                self.assertEqual(master.getnframes(), 200 + expected_gap_frames)
+
+
+if __name__ == "__main__":
+    unittest.main()

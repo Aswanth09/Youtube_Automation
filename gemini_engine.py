@@ -62,146 +62,71 @@ Keep total output under 600 words.
 """
 
 STAGE2_PROMPT_TEMPLATE = """\
-You are the lead writer and visual director for a US YouTube Shorts channel. Write a
-65-72 second psychological thriller in the high-tension documentary style of
-MagnatesMedia and ColdFusion: visceral, paranoid, cinematic, and built to replay.
-Every scene must escalate the investigation and make the next cut feel unavoidable.
+You are the dialogue writer for high-retention US YouTube Shorts about business and tech
+collapses. Create an 8-12 beat psychological thriller, around 65-72 seconds, grounded
+ONLY in VERIFIED_FACTS. Return one JSON object matching ProjectPlan: `beats`, `music`,
+and `metadata`.
 
-CRITICAL CONSTRAINT: Use ONLY the facts, dates, numbers, and names provided in the
-VERIFIED_FACTS block below. Do not introduce any date, dollar figure, statistic, or named
-individual that is not explicitly present in VERIFIED_FACTS.
+TOPIC TITLE / USER'S SPECIFIC ANGLE:
+{topic_title}
+
+STRICT ANGLE FOCUS: You must write the dialogue strictly from the specific angle and
+premise provided in the topic title (e.g., if the topic mentions 'WhatsApp Group', the
+hook, tension, and core beats must center on the private chat messages, founder panic,
+and instant messaging contagion—not generic macroeconomic background or dry bond sales).
+Keep returning to that premise throughout the beats. Include broader context only when
+it directly explains or escalates the title's specific angle.
 
 VERIFIED_FACTS:
 {fact_brief}
 
-STRUCTURE:
-- Output exactly 6 scene objects with sequential scene_id starting at 1.
-- STRICT LENGTH: 150-180 words total across 6 scenes (~60-70 seconds runtime). Scene 1
-    is the 0-3 second hook; scenes 2-5 accelerate through hubris, deception, secret
-    backdoors, and the sudden 72-hour bank run; scene 6 is the payoff and loop.
-
-RETENTION REQUIREMENTS:
-- STRICT SENTENCE OPENING RULES (NO THROAT-CLEARING):
-    NEVER start any scene's sentence with a subject's name, company name, or passive
-    scene-setting clause (e.g., BANNED: 'Sam Bankman-Fried built...', 'Internal controls
-    were...', 'The collapse accelerated when...', 'John J. Ray took over...').
-    ALWAYS open with the shock: the raw number, the scandalous object, or the physical
-    action itself, THEN reveal who did it.
-    Favor punchy sentence fragments over compound sentences.
-    BAD: 'Internal controls were non-existent. Executives used QuickBooks to track billions.'
-    GOOD: 'A multi-billion dollar empire — tracked on QuickBooks. Plus an invisible backdoor
-    letting one hedge fund secretly drain customer deposits.'
-    BAD: 'The collapse accelerated when Binance announced it would sell its tokens.'
-    GOOD: 'Six billion dollars. Vanished in seventy-two hours. The moment a rival tweeted,
-    the bank run turned lethal.'
-    BAD: 'John J. Ray III took over, describing it as the worst failure he had ever seen.'
-    GOOD: 'Eight billion dollars, completely unaccounted for. The man brought in to clean up
-    Enron called this ten times worse.'
-- Scene 1 must contain exactly 10-14 words. Open with a visceral visual metaphor and
-    dollar loss before revealing the entity name. Withhold the name until scene 2 and
-    include a centered stat-card overlay such as "$32,000,000,000 -> ZERO".
-- Scenes 2-5 should target 25-30 words each, using fast escalation through hubris,
-    deception, secret backdoors, hidden incentives, and the sudden 72-hour bank run.
-    Avoid dry reporting and repetitive "In [date], X" sentence openings.
-- Scene 6 must echo the opening hook's metric or question to create an endless loop and
-    must end with this exact sentence: "Follow for the next collapse."
-- Every scene's `micro_reveal` must name one specific verified fact, red flag, or figure.
-- Use "urgent" pacing by default. Return exactly 2 or 3 distinct, ranked, motion-heavy
-    B-roll queries per scene.
-- B-ROLL KEYWORDS RULES:
-    Strictly avoid abstract lifestyle metaphors (NO sports cars, NO champagne, NO nightclubs).
-    Output ONLY concrete, high-tension financial documentary and white-collar drama keywords.
-    Use exact visual anchors like:
-    - "red stock market graph falling"
-    - "trader hands on head stressed"
-    - "counting hundred dollar bills fast"
-    - "server rack blinking dark room"
-    - "financial audit documents rubber stamp"
-    - "handcuffs police white collar crime"
-    - "closing office glass doors night"
-    - "empty trading floor after hours"
-- Set `is_payoff_beat` true for major reveal scenes and use centered stat-card overlays
-    when a verified figure needs visual emphasis.
+DUAL-HOST FORMAT:
+- Alice is inquisitive and skeptical. Alice initiates the three-second shock hook, reacts
+  with disbelief, and sets up questions.
+- Bob is authoritative and investigative. Bob delivers exact verified numbers, dates,
+  secret details, and punchy analytical answers.
+- Every turn must switch speakers: Alice, Bob, Alice, Bob, and so on. Start with Alice.
+- Beat 1: Alice MUST address Bob directly by name in a high-tension, incredulous hook
+    about the title's specific premise. Example: "Wait Bob, are you telling me one private
+    chat triggered forty-two billion dollars in withdrawals?"
+- Beat 2: Bob MUST answer Alice directly by name with a concrete, verified detail.
+    Example: "Alice, fewer than ten hours passed after founders shared withdrawal screenshots."
+- Keep the exchange human and reactive: disbelief, interruptions, pointed follow-ups, and
+    rapid answers. DISALLOW sterile textbook questions such as "How does a bank die?"
+    Never let the dialogue drift into a generic lecture.
+- Each `line` MUST contain 8-18 words. Keep banter punchy and rapid; no rambling.
+- Use 8-12 sequential `beat_id` values. Every beat needs exactly two distinct, concrete,
+  cinematic B-roll search queries.
+- Never invent a figure, date, or named person. Keep the hook visceral and specific.
 
 MUSIC:
-- Set `suggested_music_mood` to exactly one of: "corporate_tension", "dark_suspense", "slow_investigation".
+- Return `music` with mood one of `dark_suspense`, `corporate_tension`,
+  `investigative_fast`, `tech_panic` and tempo `medium` or `fast`.
 
 METADATA:
-- `youtube_title`: under 100 characters, curiosity-driven, accurate to the story.
-- `youtube_description_base`: 2-3 paragraphs of SEO-optimized description text (omit timestamps).
-- `youtube_tags`: 5-10 tags targeted at US search behavior, including `#Shorts`.
+- `youtube_title`: under 100 characters and accurate.
+- `youtube_description_base`: 2-3 concise paragraphs.
+- `youtube_tags`: 5-10 relevant tags, including `#Shorts`.
 """
 
 STAGE2_JSON_EXAMPLE = """\
 {
-    "scenes": [
-        {
-            "scene_id": 1,
-            "narration": "Forty-seven billion dollars vanished. Then, ninety days later, absolutely nothing remained.",
-            "micro_reveal": "Peak valuation vs total collapse",
-            "pacing_weight": "urgent",
-            "broll_keywords": ["empty office lobby", "shattered glass falling", "dark skyscrapers night"],
-            "motion": {"direction": "in", "speed": "urgent"},
-            "text_overlay": {"text": "$47,000,000,000 → $0", "position": "center"},
-            "is_payoff_beat": true
-        },
-        {
-            "scene_id": 2,
-            "narration": "This was not a standard market crash. This was WeWork, an empire built on charismatic storytelling that seduced the smartest venture capitalists on Earth while everyone applauded the illusion.",
-            "micro_reveal": "WeWork communal workspace movement pitch",
-            "pacing_weight": "urgent",
-            "broll_keywords": ["modern startup office", "investor meeting room", "city skyline time lapse"],
-            "motion": {"direction": "in", "speed": "urgent"},
-            "text_overlay": null,
-            "is_payoff_beat": false
-        },
-        {
-            "scene_id": 3,
-            "narration": "SoftBank alone pumped over ten billion dollars into the furnace, pricing an ordinary real estate subleasing company higher than the world's largest commercial airlines while risk warnings disappeared behind euphemisms.",
-            "micro_reveal": "SoftBank massive capital infusions and high valuation",
-            "pacing_weight": "urgent",
-            "broll_keywords": ["currency stacks", "luxury penthouse dusk", "financial stock chart falling"],
-            "motion": {"direction": "in", "speed": "urgent"},
-            "text_overlay": {"text": "$10B Invested", "position": "center"},
-            "is_payoff_beat": false
-        },
-        {
-            "scene_id": 4,
-            "narration": "Behind closed doors, Adam Neumann trademarked the common word 'We' and charged his own cash-strapped company six million dollars just to use it while investors were told it represented culture.",
-            "micro_reveal": "Company paid Neumann $6 million for the 'We' trademark",
-            "pacing_weight": "urgent",
-            "broll_keywords": ["legal contract signing", "money transfer digital", "boardroom argument"],
-            "motion": {"direction": "in", "speed": "urgent"},
-            "text_overlay": {"text": "$6M Trademark Payout", "position": "center"},
-            "is_payoff_beat": true
-        },
-        {
-            "scene_id": 5,
-            "narration": "Even worse, he took personal loans against company stock to purchase commercial buildings, then leased those exact properties right back to WeWork for massive private profit, and nobody stopped the transaction.",
-            "micro_reveal": "2019 S-1 filing revealed massive lease liabilities",
-            "pacing_weight": "urgent",
-            "broll_keywords": ["red financial spreadsheet", "anxious investor phone call", "courtroom gavel"],
-            "motion": {"direction": "in", "speed": "urgent"},
-            "text_overlay": {"text": "-$2B Annual Loss", "position": "center"},
-            "is_payoff_beat": false
-        },
-        {
-            "scene_id": 6,
-            "narration": "The S-1 filing revealed two billion in losses and forty-seven billion in lease liabilities. Forty-seven billion erased in weeks before the lights went out completely in one brutal weekend. Follow for the next collapse.",
-            "micro_reveal": "Chapter 11 bankruptcy filing and final collapse",
-            "pacing_weight": "urgent",
-            "broll_keywords": ["closing office doors", "empty corporate building night", "bankruptcy sign"],
-            "motion": {"direction": "out", "speed": "urgent"},
-            "text_overlay": {"text": "Follow for more", "position": "center"},
-            "is_payoff_beat": true
-        }
-    ],
-    "suggested_music_mood": "dark_suspense",
-    "metadata": {
-        "youtube_title": "The $47 Billion Lie: How WeWork Burned It All #Shorts",
-        "youtube_description_base": "How Adam Neumann burned $47 billion in 90 days. The truth behind the WeWork collapse.\\n\\nSubscribe for more corporate downfalls and financial post-mortems.",
-        "youtube_tags": ["#Shorts", "WeWork", "Adam Neumann", "Business Documentary", "Startup Failure", "Tech Collapse"]
-    }
+  "beats": [
+    {"beat_id": 1, "speaker": "alice", "line": "Wait Bob, are you telling me one private chat triggered forty-two billion dollars in withdrawals?", "broll_keywords": ["private founder chat messages spreading", "panicked trader hands on head"]},
+    {"beat_id": 2, "speaker": "bob", "line": "Alice, fewer than ten hours passed after founders shared withdrawal screenshots.", "broll_keywords": ["founder withdrawal screenshot on phone", "bank app withdrawal requests rapidly rising"]},
+    {"beat_id": 3, "speaker": "alice", "line": "They knew rates were climbing. Why leave billions exposed to long-term bonds?", "broll_keywords": ["interest rate chart sharp rise", "financial risk report highlighted red"]},
+    {"beat_id": 4, "speaker": "bob", "line": "A chief risk officer seat stayed empty eight months while deposits exploded.", "broll_keywords": ["empty executive chair boardroom", "bank deposit ledger pages turning"]},
+    {"beat_id": 5, "speaker": "alice", "line": "Then one warning triggered panic. Was this a rumor, or the match?", "broll_keywords": ["phone messages spreading rapidly", "crowd rushing bank entrance"]},
+    {"beat_id": 6, "speaker": "bob", "line": "Venture capitalists messaged clients to withdraw. Forty-two billion left in one day.", "broll_keywords": ["mobile banking withdrawal screen", "cash vault door slamming shut"]},
+    {"beat_id": 7, "speaker": "alice", "line": "One day? And the executives had already seen the risk reports?", "broll_keywords": ["financial audit reports scattered desk", "executive silhouette under harsh light"]},
+    {"beat_id": 8, "speaker": "bob", "line": "Regulators seized the bank March tenth. That vanished forty-two billion started as a warning.", "broll_keywords": ["regulator notice on bank doors", "empty trading floor after hours"]}
+  ],
+  "music": {"mood": "tech_panic", "tempo": "fast"},
+  "metadata": {
+    "youtube_title": "The 10-Hour Bank Run: SVB's Final Collapse #Shorts",
+    "youtube_description_base": "How a rapid withdrawal wave toppled Silicon Valley Bank.\\n\\nFollow the warning signs behind the collapse.",
+    "youtube_tags": ["#Shorts", "SVB", "Bank Run", "Financial Crisis", "Silicon Valley Bank"]
+  }
 }
 """
 
@@ -286,9 +211,9 @@ def _strip_json_fences(text: str) -> str:
     return cleaned.strip()
 
 
-def _stage2_call(fact_brief: str) -> ProjectPlan:
+def _stage2_call(fact_brief: str, topic_title: str | None = None) -> ProjectPlan:
     prompt = (
-        f"{STAGE2_PROMPT_TEMPLATE.format(fact_brief=fact_brief)}\n\n"
+        f"{STAGE2_PROMPT_TEMPLATE.format(fact_brief=fact_brief, topic_title=topic_title or 'No topic title supplied')}\n\n"
         f"You MUST return valid JSON matching this compact example and all field constraints:\n"
         f"{STAGE2_JSON_EXAMPLE}"
     )
@@ -331,14 +256,36 @@ def _stage2_call(fact_brief: str) -> ProjectPlan:
 
 
 def _validate_stage2_constraints(plan: ProjectPlan) -> None:
-    """Reject weak new YouTube Short plans during generation."""
+    """Apply generation constraints to new beats and legacy scene plans."""
+    if plan.beats is not None:
+        if not 8 <= len(plan.beats) <= 12:
+            raise ValueError(f"Dual-host Short requires 8-12 beats, got {len(plan.beats)}")
+        if plan.beats[0].speaker != "alice":
+            raise ValueError("The first hook beat must be spoken by Alice")
+        if not re.search(r"\bbob\b", plan.beats[0].line, flags=re.IGNORECASE):
+            raise ValueError("Beat 1 must address Bob by name")
+        if not re.search(r"\balice\b", plan.beats[1].line, flags=re.IGNORECASE):
+            raise ValueError("Beat 2 must address Alice by name")
+        for previous, current in zip(plan.beats, plan.beats[1:]):
+            if previous.speaker == current.speaker:
+                raise ValueError("Beat speakers must alternate between Alice and Bob")
+            word_count = len(current.line.split())
+            if not 8 <= word_count <= 18:
+                raise ValueError(
+                    f"Beat {current.beat_id} line must contain 8-18 words, got {word_count}"
+                )
+            if len(current.broll_keywords) != 2:
+                raise ValueError(f"Beat {current.beat_id} must have exactly 2 B-roll queries")
+        return
+
+    if plan.scenes is None:
+        raise ValueError("Plan has no scenes or dialogue beats")
     if not 5 <= len(plan.scenes) <= 7:
         raise ValueError(f"Short plan must contain 5-7 scenes, got {len(plan.scenes)}")
 
     total_words = sum(len(scene.narration.split()) for scene in plan.scenes)
     if not 145 <= total_words <= 190:
         raise ValueError(f"Short script must contain 145-190 words, got {total_words}")
-
     for scene in plan.scenes:
         word_count = len(scene.narration.split())
         lower, upper = (8, 14) if scene.scene_id == 1 else (20, 35)
@@ -346,12 +293,9 @@ def _validate_stage2_constraints(plan: ProjectPlan) -> None:
             raise ValueError(
                 f"Scene {scene.scene_id} narration must contain {lower}-{upper} words, got {word_count}"
             )
-
         keywords = [keyword.strip() for keyword in scene.broll_keywords if keyword.strip()]
         if not 2 <= len(keywords) <= 3:
-            raise ValueError(
-                f"Scene {scene.scene_id} must contain 2-3 B-roll keywords, got {len(keywords)}"
-            )
+            raise ValueError(f"Scene {scene.scene_id} must contain 2-3 B-roll keywords, got {len(keywords)}")
         if len({keyword.casefold() for keyword in keywords}) != len(keywords):
             raise ValueError(f"Scene {scene.scene_id} B-roll keywords must be distinct")
 
@@ -368,7 +312,11 @@ def _pause_between_stages() -> None:
     time.sleep(delay)
 
 
-def stage2_generate_scenes(fact_brief: str, max_attempts: int = 3) -> ProjectPlan:
+def stage2_generate_scenes(
+    fact_brief: str,
+    max_attempts: int = 3,
+    topic_title: str | None = None,
+) -> ProjectPlan:
     """Generate scenes with self-healing retries for schema validation failures."""
     _pause_between_stages()
     last_error: Optional[Exception] = None
@@ -376,7 +324,7 @@ def stage2_generate_scenes(fact_brief: str, max_attempts: int = 3) -> ProjectPla
 
     for attempt in range(1, max_attempts + 1):
         try:
-            plan = _stage2_call(prompt_fact_brief)
+            plan = _stage2_call(prompt_fact_brief, topic_title=topic_title)
             verify_scenes_against_facts(plan, fact_brief)
             return plan
         except (ValidationError, ValueError) as error:
@@ -398,15 +346,17 @@ def stage2_generate_scenes(fact_brief: str, max_attempts: int = 3) -> ProjectPla
 
 
 def verify_scenes_against_facts(plan: ProjectPlan, fact_brief: str) -> None:
-    """Warn when scene narration contains a year or currency figure absent from facts."""
+    """Warn when narration contains a year or currency figure absent from facts."""
     brief_lower = fact_brief.lower()
     number_pattern = re.compile(r"\$[\d,.]+[mMbBkK]?|\b(?:19|20)\d{2}\b")
 
-    for scene in plan.scenes:
-        for token in number_pattern.findall(scene.narration):
+    for beat in plan.timeline:
+        narration = beat.line if hasattr(beat, "line") else beat.narration
+        beat_id = beat.beat_id if hasattr(beat, "beat_id") else beat.scene_id
+        for token in number_pattern.findall(narration):
             if token.lower() not in brief_lower:
                 log.warning(
-                    "Scene %d mentions figure/year %r not found in fact brief.",
-                    scene.scene_id,
+                    "Beat/scene %d mentions figure/year %r not found in fact brief.",
+                    beat_id,
                     token,
                 )

@@ -12,10 +12,11 @@ import argparse
 import logging
 from pathlib import Path
 
-from config import project_paths, SETTINGS
+from config import ensure_default_avatars, project_paths, SETTINGS
 from project_state import ProjectState
-from render_engine import render_all_scenes
-from assemble import assemble_final_video
+from render_engine import render_all_beats, render_all_scenes
+from assemble import assemble_dual_host_video, assemble_final_video, assemble_final_video_with_music
+from music_engine import ensure_music_bed
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 log = logging.getLogger("03_render")
@@ -34,8 +35,9 @@ def main() -> None:
     paths = project_paths(slug)
     state = ProjectState.load(paths.state_file)
 
+    timeline = state.plan.timeline
     missing = [
-        s.scene_id for s in state.plan.scenes
+        s.scene_id for s in timeline
         if not (
             state.scene_assets.get(s.scene_id)
             and state.scene_assets[s.scene_id].audio_path
@@ -55,7 +57,7 @@ def main() -> None:
         for sid, sa in state.scene_assets.items()
     }
     subtitles_paths = {}
-    for scene in state.plan.scenes:
+    for scene in timeline:
         assets = state.scene_assets[scene.scene_id]
         subtitle_path = (
             Path(assets.subtitles_path)
@@ -75,17 +77,28 @@ def main() -> None:
             )
         subtitles_paths[scene.scene_id] = subtitle_path
 
-    scene_count = min(2, len(state.plan.scenes)) if args.preview else len(state.plan.scenes)
+    scene_count = min(2, len(timeline)) if args.preview else len(timeline)
     log.info("Rendering %d scene(s) (preview=%s, encoder=%s)...", scene_count, args.preview, SETTINGS.video_encoder)
 
-    scene_files = render_all_scenes(
-        state.plan.scenes,
-        broll_paths,
-        audio_data,
-        paths.intermediate_scenes,
-        subtitles_paths=subtitles_paths,
-        preview=args.preview,
-    )
+    if state.plan.beats is not None:
+        ensure_default_avatars()
+        scene_files = render_all_beats(
+            timeline,
+            broll_paths,
+            audio_data,
+            subtitles_paths,
+            paths.intermediate_scenes,
+            preview=args.preview,
+        )
+    else:
+        scene_files = render_all_scenes(
+            timeline,
+            broll_paths,
+            audio_data,
+            paths.intermediate_scenes,
+            subtitles_paths=subtitles_paths,
+            preview=args.preview,
+        )
 
     if args.preview:
         log.info("=== Preview scenes rendered ===")
@@ -94,8 +107,27 @@ def main() -> None:
         log.info("Review these before running the full render (omit --preview).")
         return
 
-    log.info("Concatenating and applying '%s' music bed...", state.plan.suggested_music_mood)
-    final_path = assemble_final_video(slug, scene_files, state.plan.suggested_music_mood, paths.final_output)
+    if state.plan.beats is not None and state.plan.music is not None:
+        music_bed = ensure_music_bed(state.plan.music, paths.final_output)
+        log.info(
+            "Concatenating with curated music (mood=%s, tempo=%s)...",
+            state.plan.music.mood,
+            state.plan.music.tempo,
+        )
+        narration_files = [Path(state.scene_assets[beat.beat_id].audio_path) for beat in state.plan.beats]
+        final_path = assemble_dual_host_video(
+            slug,
+            scene_files,
+            narration_files,
+            music_bed,
+            paths.final_output,
+        )
+    elif state.plan.music is not None:
+        music_bed = ensure_music_bed(state.plan.music, paths.final_output)
+        final_path = assemble_final_video_with_music(slug, scene_files, music_bed, paths.final_output)
+    else:
+        log.info("Concatenating and applying '%s' music bed...", state.plan.suggested_music_mood)
+        final_path = assemble_final_video(slug, scene_files, state.plan.suggested_music_mood, paths.final_output)
 
     state.final_output_path = str(final_path)
     state.save(paths.state_file)

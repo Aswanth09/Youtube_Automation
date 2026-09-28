@@ -52,5 +52,5 @@ def new_project_state(topic: str, slug: str, fact_brief: str, plan: ProjectPlan)
         created_at=datetime.now(timezone.utc).isoformat(),
         fact_brief=fact_brief,
         plan=plan,
-        scene_assets={s.scene_id: SceneAssets() for s in plan.scenes},
+        scene_assets={unit.scene_id: SceneAssets() for unit in plan.timeline},
     )

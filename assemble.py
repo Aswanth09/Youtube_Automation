@@ -11,10 +11,13 @@ import logging
 import os
 import subprocess
 import tempfile
+import wave
 from pathlib import Path
 
 import requests
 import imageio_ffmpeg
+
+from config import AUDIO_CHANNELS, INTER_TURN_GAP_MS, SAMPLE_RATE
 
 log = logging.getLogger(__name__)
 
@@ -28,9 +31,11 @@ MUSIC_SEARCH_TERMS = {
 }
 
 DUCK_FILTER = (
-    "[1:a]volume=0.18[bed];"
-    "[0:a][bed]sidechaincompress=threshold=0.125:ratio=4:attack=20:release=300:makeup=1[bedducked];"
-    "[0:a][bedducked]amix=inputs=2:duration=first:dropout_transition=2[aout]"
+    "[0:a]asplit=2[voice][key];"
+    "[1:a]volume=0.45[bed];"
+    "[bed][key]sidechaincompress=threshold=0.03:ratio=8:attack=15:release=450:makeup=1[ducked];"
+    "[voice][ducked]amix=inputs=2:duration=first:normalize=0[mix];"
+    "[mix]loudnorm=I=-14:TP=-1.5:LRA=11[aout]"
 )
 
 MOOD_TRACK_MAP = {
@@ -127,7 +132,7 @@ def _create_silent_music_bed(destination: Path) -> None:
     subprocess.run(
         [
             FFMPEG_BIN, "-y",
-            "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo",
+            "-f", "lavfi", "-i", f"anullsrc=r={SAMPLE_RATE}:cl=stereo",
             "-t", "1", "-c:a", "libmp3lame", "-b:a", "128k",
             str(destination),
         ],
@@ -162,6 +167,7 @@ def add_music_bed(concat_path: Path, music_bed_path: Path, final_out_path: Path)
             "-map", "0:v", "-map", "[aout]",
             "-shortest",
             "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+            "-ar", str(SAMPLE_RATE), "-ac", str(AUDIO_CHANNELS),
             str(final_out_path),
         ],
         check=True, capture_output=True, text=True, timeout=180,
@@ -180,3 +186,116 @@ def assemble_final_video(slug: str, scene_files: list[Path], mood: str, out_dir:
 
     concat_only.unlink(missing_ok=True)
     return final_out
+
+
+def assemble_final_video_with_music(
+    slug: str,
+    scene_files: list[Path],
+    music_bed_path: Path,
+    out_dir: Path,
+) -> Path:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    concat_only = out_dir / f"{slug}_concat_novoice_bed.mp4"
+    final_out = out_dir / f"{slug}_final.mp4"
+    concat_scenes(scene_files, concat_only)
+    add_music_bed(concat_only, music_bed_path, final_out)
+    concat_only.unlink(missing_ok=True)
+    return final_out
+
+
+def write_concat_list(video_files: list[Path], concat_list: Path) -> Path:
+    concat_list.parent.mkdir(parents=True, exist_ok=True)
+    entries = []
+    for video_path in video_files:
+        escaped_path = video_path.resolve().as_posix().replace("'", "'\\''")
+        entries.append(f"file '{escaped_path}'")
+    concat_list.write_text("\n".join(entries) + "\n", encoding="utf-8")
+    return concat_list
+
+
+def concatenate_beat_videos(video_files: list[Path], output_path: Path) -> Path:
+    concat_list = write_concat_list(video_files, output_path.parent / "concat_list.txt")
+    subprocess.run(
+        [FFMPEG_BIN, "-y", "-f", "concat", "-safe", "0", "-i", str(concat_list), "-c:v", "copy", "-an", str(output_path)],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=180,
+    )
+    return output_path
+
+
+def build_master_narration_wav(audio_files: list[Path], output_path: Path) -> Path:
+    """Join sample-accurate beat WAVs with configured gaps between turns."""
+    if not audio_files:
+        raise ValueError("At least one beat narration WAV is required")
+    gap_frames = SAMPLE_RATE * INTER_TURN_GAP_MS // 1000
+    expected_format = None
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with wave.open(str(output_path), "wb") as master:
+        for index, audio_path in enumerate(audio_files):
+            with wave.open(str(audio_path), "rb") as beat_audio:
+                audio_format = (
+                    beat_audio.getnchannels(),
+                    beat_audio.getsampwidth(),
+                    beat_audio.getframerate(),
+                    beat_audio.getcomptype(),
+                )
+                if expected_format is None:
+                    expected_format = audio_format
+                    if audio_format[:3] != (AUDIO_CHANNELS, 2, SAMPLE_RATE):
+                        raise ValueError(f"Beat WAV must be 48 kHz 16-bit stereo: {audio_path}")
+                    master.setnchannels(audio_format[0])
+                    master.setsampwidth(audio_format[1])
+                    master.setframerate(audio_format[2])
+                elif audio_format != expected_format:
+                    raise ValueError(f"Beat WAV format differs from other turns: {audio_path}")
+
+                master.writeframes(beat_audio.readframes(beat_audio.getnframes()))
+            if index < len(audio_files) - 1:
+                master.writeframes(b"\x00" * gap_frames * AUDIO_CHANNELS * 2)
+    return output_path
+
+
+def mix_narration_and_music(
+    silent_video_path: Path,
+    narration_path: Path,
+    music_path: Path,
+    final_path: Path,
+) -> Path:
+    subprocess.run(
+        [
+            FFMPEG_BIN, "-y",
+            "-i", str(silent_video_path),
+            "-i", str(narration_path),
+            "-stream_loop", "-1", "-i", str(music_path),
+            "-filter_complex", DUCK_FILTER.replace("[0:a]", "[1:a]").replace("[1:a]volume", "[2:a]volume"),
+            "-map", "0:v:0", "-map", "[aout]", "-shortest",
+            "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+            "-ar", str(SAMPLE_RATE), "-ac", str(AUDIO_CHANNELS), str(final_path),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=240,
+    )
+    return final_path
+
+
+def assemble_dual_host_video(
+    slug: str,
+    beat_video_files: list[Path],
+    narration_files: list[Path],
+    music_path: Path,
+    out_dir: Path,
+) -> Path:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    silent_video = out_dir / f"{slug}_video_only.mp4"
+    master_voice = out_dir / f"{slug}_narration_master.wav"
+    final_path = out_dir / f"{slug}_final.mp4"
+    concatenate_beat_videos(beat_video_files, silent_video)
+    build_master_narration_wav(narration_files, master_voice)
+    mix_narration_and_music(silent_video, master_voice, music_path, final_path)
+    silent_video.unlink(missing_ok=True)
+    master_voice.unlink(missing_ok=True)
+    return final_path

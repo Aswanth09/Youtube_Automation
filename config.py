@@ -29,6 +29,50 @@ def _require(key: str) -> str:
 
 
 VALID_MUSIC_MOODS = ("corporate_tension", "dark_suspense", "slow_investigation")
+SAMPLE_RATE = 48000
+AUDIO_CHANNELS = 2
+VOICE_MAP = {"alice": "en-US-JennyNeural", "bob": "en-US-GuyNeural"}
+INTER_TURN_GAP_MS = 120
+ASSETS_DIR = Path(__file__).resolve().parent / "assets"
+AVATAR_DIR = ASSETS_DIR / "avatars"
+AVATAR_ALICE = AVATAR_DIR / "alice.png"
+AVATAR_BOB = AVATAR_DIR / "bob.png"
+AVATAR_POS_ALICE = (60, 1320)
+AVATAR_POS_BOB = (680, 1200)
+AVATAR_SIZE = 280
+
+
+def ensure_default_avatars() -> tuple[Path, Path]:
+    """Create circular neon placeholders for missing host avatar images."""
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except ImportError as error:
+        raise RuntimeError("Pillow is required to generate default host avatars") from error
+
+    AVATAR_DIR.mkdir(parents=True, exist_ok=True)
+    avatar_specs = (
+        (AVATAR_ALICE, "A", (217, 0, 255, 255)),
+        (AVATAR_BOB, "B", (0, 212, 255, 255)),
+    )
+    image_size = 512
+    for path, initial, neon in avatar_specs:
+        if path.is_file():
+            continue
+        image = Image.new("RGBA", (image_size, image_size), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(image)
+        draw.ellipse((12, 12, image_size - 12, image_size - 12), fill=(12, 16, 28, 245))
+        draw.ellipse((18, 18, image_size - 18, image_size - 18), outline=neon, width=20)
+        draw.ellipse((48, 48, image_size - 48, image_size - 48), outline=(*neon[:3], 120), width=4)
+        try:
+            font = ImageFont.truetype("arial.ttf", 230)
+        except OSError:
+            font = ImageFont.load_default()
+        bounds = draw.textbbox((0, 0), initial, font=font)
+        x = (image_size - (bounds[2] - bounds[0])) / 2 - bounds[0]
+        y = (image_size - (bounds[3] - bounds[1])) / 2 - bounds[1]
+        draw.text((x, y), initial, fill=(255, 255, 255, 255), font=font)
+        image.save(path, format="PNG")
+    return AVATAR_ALICE, AVATAR_BOB
 
 
 @dataclass(frozen=True)

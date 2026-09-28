@@ -31,30 +31,37 @@ def main() -> None:
     paths = project_paths(slug)
     state = ProjectState.load(paths.state_file)
 
-    log.info("Synthesizing narration audio for %d scenes...", len(state.plan.scenes))
-    for scene in state.plan.scenes:
+    timeline = state.plan.timeline
+    log.info("Synthesizing narration audio for %d beats/scenes...", len(timeline))
+    for scene in timeline:
         existing = state.scene_assets.get(scene.scene_id, SceneAssets())
         if (
             existing.audio_path
+            and Path(existing.audio_path).suffix.lower() == ".wav"
             and Path(existing.audio_path).exists()
             and existing.subtitles_path
             and Path(existing.subtitles_path).exists()
         ):
             log.info("Scene %d audio already exists, skipping.", scene.scene_id)
             continue
-        audio_path, ass_path, duration = generate_scene_audio(scene.scene_id, scene.narration, paths.audio)
+        audio_path, ass_path, duration = generate_scene_audio(
+            scene.scene_id,
+            scene.narration,
+            paths.audio,
+            speaker=getattr(scene, "speaker", None),
+        )
         existing.audio_path = str(audio_path)
         existing.subtitles_path = str(ass_path)
         existing.duration = duration
         state.scene_assets[scene.scene_id] = existing
     state.save(paths.state_file)
 
-    log.info("Resolving B-roll for %d scenes...", len(state.plan.scenes))
+    log.info("Resolving B-roll for %d beats/scenes...", len(timeline))
     durations = {
         scene_id: assets.duration
         for scene_id, assets in state.scene_assets.items()
     }
-    broll_paths = resolve_all_broll(slug, state.plan.scenes, paths.raw_footage, durations)
+    broll_paths = resolve_all_broll(slug, timeline, paths.raw_footage, durations)
     for scene_id, paths_for_scene in broll_paths.items():
         existing = state.scene_assets.get(scene_id, SceneAssets())
         existing.broll_paths = [str(path) for path in paths_for_scene]

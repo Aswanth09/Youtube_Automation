@@ -66,10 +66,12 @@ def main() -> None:
     log.info("Fact brief captured (%d words).", len(fact_brief.split()))
 
     log.info("Stage 2: 65-72 second Short scene + metadata generation...")
-    plan = stage2_generate_scenes(fact_brief)
+    plan = stage2_generate_scenes(fact_brief, topic_title=args.topic)
+    timeline = plan.timeline
+    music_label = plan.music.mood if plan.music else plan.suggested_music_mood
     log.info(
         "Generated %d scenes. Music mood: %s. Title: %s",
-        len(plan.scenes), plan.suggested_music_mood, plan.metadata.youtube_title,
+        len(timeline), music_label, plan.metadata.youtube_title,
     )
 
     state = new_project_state(args.topic, slug, fact_brief, plan)
@@ -77,9 +79,9 @@ def main() -> None:
 
     metadata_out = {
         "title": plan.metadata.youtube_title,
-        "description": build_final_description(plan.metadata.youtube_description_base, plan.scenes),
+        "description": build_final_description(plan.metadata.youtube_description_base, timeline),
         "tags": plan.metadata.youtube_tags,
-        "suggested_music_mood": plan.suggested_music_mood,
+        "suggested_music_mood": music_label,
     }
     paths.metadata_file.write_text(json.dumps(metadata_out, indent=2), encoding="utf-8")
 
