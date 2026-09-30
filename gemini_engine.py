@@ -61,72 +61,80 @@ RED_FLAGS_AND_REVEALS:
 Keep total output under 600 words.
 """
 
-STAGE2_PROMPT_TEMPLATE = """\
-You are the dialogue writer for high-retention US YouTube Shorts about business and tech
-collapses. Create an 8-12 beat psychological thriller, around 65-72 seconds, grounded
-ONLY in VERIFIED_FACTS. Return one JSON object matching ProjectPlan: `beats`, `music`,
-and `metadata`.
+STAGE2_PROMPT_TEMPLATE = """
+You are an elite short-form video dialogue writer for 60-70 second investigative thrillers on YouTube Shorts and TikTok.
+Create a high-retention 12-14 beat dialogue script grounded ONLY in VERIFIED_FACTS. Return one JSON object matching ProjectPlan: `beats`, `music`, and `metadata`.
 
-TOPIC TITLE / USER'S SPECIFIC ANGLE:
+TOPIC TITLE / SPECIFIC ANGLE:
 {topic_title}
-
-STRICT ANGLE FOCUS: You must write the dialogue strictly from the specific angle and
-premise provided in the topic title (e.g., if the topic mentions 'WhatsApp Group', the
-hook, tension, and core beats must center on the private chat messages, founder panic,
-and instant messaging contagion—not generic macroeconomic background or dry bond sales).
-Keep returning to that premise throughout the beats. Include broader context only when
-it directly explains or escalates the title's specific angle.
 
 VERIFIED_FACTS:
 {fact_brief}
 
-DUAL-HOST FORMAT:
-- Alice is inquisitive and skeptical. Alice initiates the three-second shock hook, reacts
-  with disbelief, and sets up questions.
-- Bob is authoritative and investigative. Bob delivers exact verified numbers, dates,
-  secret details, and punchy analytical answers.
-- Every turn must switch speakers: Alice, Bob, Alice, Bob, and so on. Start with Alice.
-- Beat 1: Alice MUST address Bob directly by name in a high-tension, incredulous hook
-    about the title's specific premise. Example: "Wait Bob, are you telling me one private
-    chat triggered forty-two billion dollars in withdrawals?"
-- Beat 2: Bob MUST answer Alice directly by name with a concrete, verified detail.
-    Example: "Alice, fewer than ten hours passed after founders shared withdrawal screenshots."
-- Keep the exchange human and reactive: disbelief, interruptions, pointed follow-ups, and
-    rapid answers. DISALLOW sterile textbook questions such as "How does a bank die?"
-    Never let the dialogue drift into a generic lecture.
-- Each `line` MUST contain 8-18 words. Keep banter punchy and rapid; no rambling.
-- Use 8-12 sequential `beat_id` values. Every beat needs exactly two distinct, concrete,
-  cinematic B-roll search queries.
-- Never invent a figure, date, or named person. Keep the hook visceral and specific.
+NARRATIVE ARCHETYPE (Choose the best fit for the topic):
+
+* Engine A (Hidden Failure): Overlooked technical/product flaw -> cascading failure -> original decision reframed.
+* Engine B (Corporate Contradiction): Public claims vs. secret reality -> evidence leak -> documented fallout.
+* Engine C (Digital Contagion): Private chat/warning -> network panic -> instantaneous bank run or liquidity drain.
+
+DUAL-HOST FORMAT & ROLES:
+
+* Maya: Skeptical, inquisitive interrogator. Speaks for viewer disbelief, calls out contradictions, and drives curiosity.
+* Jax: Calm, authoritative forensic analyst. Delivers exact verified figures, dates, leaked memos, and causal explanations.
+* Alternate speakers on every single turn: Maya, Jax, Maya, Jax... Start with Maya.
+
+BEAT-BY-BEAT RETENTION STRUCTURE (14 TURNS):
+
+* Beat 1 (Maya): High-tension pattern interrupt hook. MUST address Jax directly by name about the specific premise.
+* Beat 2 (Jax): Opening shock statistic or verified fact. MUST address Maya directly by name.
+* Beats 3-6 (Genesis): Establish the mechanism and the first overlooked red flag.
+* Beats 7-10 (Escalation): Reveal the hidden leak, conflict of interest, or accelerating contagion.
+* Beats 11-12 (Cascade): The irreversible event, peak withdrawal/loss numbers, and regulator seizure.
+* Beat 13 (Maya): Setup for the paradoxical loop ("Jax, then the company didn't collapse when...").
+* Beat 14 (Jax): The punchline reframing Beat 1 so the video loops seamlessly back to the beginning.
+
+CRITICAL CONSTRAINTS:
+
+* Each `line` MUST contain strictly 10-18 words. No rambling, no dead air, no academic lectures.
+* Use 12-14 sequential `beat_id` values (target 14).
+* Every beat needs exactly two distinct, concrete, search-friendly B-roll queries (2-4 words, physical nouns and actions like "panicked trader holding head", "bank vault door closing"). NEVER include camera angles or abstract adjectives.
+* Never invent figures, memos, or dates not grounded in the facts.
 
 MUSIC:
-- Return `music` with mood one of `dark_suspense`, `corporate_tension`,
-  `investigative_fast`, `tech_panic` and tempo `medium` or `fast`.
+
+* Return `music` with mood one of `dark_suspense`, `corporate_tension`, `investigative_fast`, `tech_panic` and tempo `medium` or `fast`.
 
 METADATA:
-- `youtube_title`: under 100 characters and accurate.
-- `youtube_description_base`: 2-3 concise paragraphs.
-- `youtube_tags`: 5-10 relevant tags, including `#Shorts`.
+
+* `youtube_title`: under 100 characters and viral/accurate.
+* `youtube_description_base`: 2 concise paragraphs with context.
+* `youtube_tags`: 5-10 relevant tags including `#Shorts`.
 """
 
-STAGE2_JSON_EXAMPLE = """\
+STAGE2_JSON_EXAMPLE = """
 {
-  "beats": [
-    {"beat_id": 1, "speaker": "alice", "line": "Wait Bob, are you telling me one private chat triggered forty-two billion dollars in withdrawals?", "broll_keywords": ["private founder chat messages spreading", "panicked trader hands on head"]},
-    {"beat_id": 2, "speaker": "bob", "line": "Alice, fewer than ten hours passed after founders shared withdrawal screenshots.", "broll_keywords": ["founder withdrawal screenshot on phone", "bank app withdrawal requests rapidly rising"]},
-    {"beat_id": 3, "speaker": "alice", "line": "They knew rates were climbing. Why leave billions exposed to long-term bonds?", "broll_keywords": ["interest rate chart sharp rise", "financial risk report highlighted red"]},
-    {"beat_id": 4, "speaker": "bob", "line": "A chief risk officer seat stayed empty eight months while deposits exploded.", "broll_keywords": ["empty executive chair boardroom", "bank deposit ledger pages turning"]},
-    {"beat_id": 5, "speaker": "alice", "line": "Then one warning triggered panic. Was this a rumor, or the match?", "broll_keywords": ["phone messages spreading rapidly", "crowd rushing bank entrance"]},
-    {"beat_id": 6, "speaker": "bob", "line": "Venture capitalists messaged clients to withdraw. Forty-two billion left in one day.", "broll_keywords": ["mobile banking withdrawal screen", "cash vault door slamming shut"]},
-    {"beat_id": 7, "speaker": "alice", "line": "One day? And the executives had already seen the risk reports?", "broll_keywords": ["financial audit reports scattered desk", "executive silhouette under harsh light"]},
-    {"beat_id": 8, "speaker": "bob", "line": "Regulators seized the bank March tenth. That vanished forty-two billion started as a warning.", "broll_keywords": ["regulator notice on bank doors", "empty trading floor after hours"]}
-  ],
-  "music": {"mood": "tech_panic", "tempo": "fast"},
-  "metadata": {
-    "youtube_title": "The 10-Hour Bank Run: SVB's Final Collapse #Shorts",
-    "youtube_description_base": "How a rapid withdrawal wave toppled Silicon Valley Bank.\\n\\nFollow the warning signs behind the collapse.",
-    "youtube_tags": ["#Shorts", "SVB", "Bank Run", "Financial Crisis", "Silicon Valley Bank"]
-  }
+"beats": [
+{"beat_id": 1, "speaker": "maya", "line": "Wait Jax, did one private message thread really trigger forty-two billion dollars in withdrawals?", "broll_keywords": ["smartphone notification screen", "panicked person holding phone"]},
+{"beat_id": 2, "speaker": "jax", "line": "Maya, once venture capital leaders sent warnings, the digital bank run became completely instantaneous.", "broll_keywords": ["message notification popping up", "venture capital office interior"]},
+{"beat_id": 3, "speaker": "maya", "line": "How did startup founders bring down a two hundred billion dollar bank in hours?", "broll_keywords": ["bank headquarters exterior sign", "graph showing sharp financial decline"]},
+{"beat_id": 4, "speaker": "jax", "line": "Their growth depended on customer deposits remaining safe while billions sat in long-term bonds.", "broll_keywords": ["bank deposit ledger pages", "interest rate chart moving upwards"]},
+{"beat_id": 5, "speaker": "maya", "line": "Somebody inside had to notice rising interest rates were crushing those bond investments, right?", "broll_keywords": ["financial audit report highlighted", "empty executive chair boardroom"]},
+{"beat_id": 6, "speaker": "jax", "line": "The bank operated without a chief risk officer for eight months during interest hikes.", "broll_keywords": ["empty office chair", "stock trading dashboard flashing red"]},
+{"beat_id": 7, "speaker": "maya", "line": "Wait, who actually knew eighty-nine percent of all customer deposits were completely uninsured?", "broll_keywords": ["scrolling through chat messages", "stressed founder looking at laptop"]},
+{"beat_id": 8, "speaker": "jax", "line": "Prominent venture funds realized the exposure and advised portfolio companies to withdraw immediately.", "broll_keywords": ["mobile banking withdrawal screen", "hand hitting send on smartphone"]},
+{"beat_id": 9, "speaker": "maya", "line": "So private screenshots leaked while executives were publicly promising everything was totally fine?", "broll_keywords": ["private founder chat messages", "chaotic crowd of tech employees"]},
+{"beat_id": 10, "speaker": "jax", "line": "Customers withdrew forty-two billion in ten hours, draining one quarter of total deposits.", "broll_keywords": ["cash vault door slamming shut", "empty trading floor after hours"]},
+{"beat_id": 11, "speaker": "maya", "line": "Forty-two billion gone in ten hours? And leadership couldn't halt the mobile withdrawals?", "broll_keywords": ["panicked trader hands on head", "regulator notice on bank doors"]},
+{"beat_id": 12, "speaker": "jax", "line": "Regulators seized the insolvent bank within forty-eight hours of their failed capital raise.", "broll_keywords": ["FDIC sign on bank door", "closing office glass doors night"]},
+{"beat_id": 13, "speaker": "maya", "line": "Jax, then the bank didn't die from bad bonds. It collapsed when...", "broll_keywords": ["smartphone notification screen", "bank headquarters exterior sign"]},
+{"beat_id": 14, "speaker": "jax", "line": "...digital group chats turned mutual trust into the fastest bank run in history.", "broll_keywords": ["message notification popping up", "panicked person holding phone"]}
+],
+"music": {"mood": "tech_panic", "tempo": "fast"},
+"metadata": {
+"youtube_title": "Inside the WhatsApp Panic That Killed Silicon Valley Bank #Shorts",
+"youtube_description_base": "How a private message thread sparked a $42 billion bank run in under 48 hours.\\n\\nFollow the warning signs behind the collapse.",
+"youtube_tags": ["#Shorts", "SVB", "BankRun", "FinancialCrisis", "SiliconValleyBank", "TechPanic"]
+}
 }
 """
 
@@ -256,23 +264,23 @@ def _stage2_call(fact_brief: str, topic_title: str | None = None) -> ProjectPlan
 
 
 def _validate_stage2_constraints(plan: ProjectPlan) -> None:
-    """Apply generation constraints to new beats and legacy scene plans."""
+    """Apply generation constraints to dual-host beats and legacy scene plans."""
     if plan.beats is not None:
-        if not 8 <= len(plan.beats) <= 12:
-            raise ValueError(f"Dual-host Short requires 8-12 beats, got {len(plan.beats)}")
-        if plan.beats[0].speaker != "alice":
-            raise ValueError("The first hook beat must be spoken by Alice")
-        if not re.search(r"\bbob\b", plan.beats[0].line, flags=re.IGNORECASE):
-            raise ValueError("Beat 1 must address Bob by name")
-        if not re.search(r"\balice\b", plan.beats[1].line, flags=re.IGNORECASE):
-            raise ValueError("Beat 2 must address Alice by name")
+        if not 12 <= len(plan.beats) <= 14:
+            raise ValueError(f"Dual-host Short requires 12-14 beats, got {len(plan.beats)}")
+        if plan.beats[0].speaker not in ("maya", "alice"):
+            raise ValueError("The first hook beat must be spoken by Maya")
+        if not re.search(r"\b(jax|bob)\b", plan.beats[0].line, flags=re.IGNORECASE):
+            raise ValueError("Beat 1 must address Jax by name")
+        if not re.search(r"\b(maya|alice)\b", plan.beats[1].line, flags=re.IGNORECASE):
+            raise ValueError("Beat 2 must address Maya by name")
         for previous, current in zip(plan.beats, plan.beats[1:]):
             if previous.speaker == current.speaker:
-                raise ValueError("Beat speakers must alternate between Alice and Bob")
+                raise ValueError("Beat speakers must alternate between Maya and Jax")
             word_count = len(current.line.split())
-            if not 8 <= word_count <= 18:
+            if not 10 <= word_count <= 18:
                 raise ValueError(
-                    f"Beat {current.beat_id} line must contain 8-18 words, got {word_count}"
+                    f"Beat {current.beat_id} line must contain 10-18 words, got {word_count}"
                 )
             if len(current.broll_keywords) != 2:
                 raise ValueError(f"Beat {current.beat_id} must have exactly 2 B-roll queries")

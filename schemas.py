@@ -5,7 +5,7 @@ from typing import Any, List, Literal, Optional
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 MusicMood = Literal["corporate_tension", "dark_suspense", "slow_investigation"]
-Speaker = Literal["alice", "bob"]
+Speaker = Literal["maya", "jax"]
 
 
 class Beat(BaseModel):
@@ -18,8 +18,8 @@ class Beat(BaseModel):
     @classmethod
     def validate_line_length(cls, value: str) -> str:
         words = len(value.split())
-        if not 8 <= words <= 18:
-            raise ValueError(f"beat line must contain 8-18 words, got {words}")
+        if not 10 <= words <= 18:
+            raise ValueError(f"beat line must contain 10-18 words, got {words}")
         return value
 
     @field_validator("broll_keywords")
@@ -129,7 +129,7 @@ class VideoMetadata(BaseModel):
 
 
 class ProjectPlan(BaseModel):
-    beats: list[Beat] | None = Field(default=None, min_length=8, max_length=12)
+    beats: list[Beat] | None = Field(default=None, min_length=12, max_length=14)
     music: MusicQuery | None = None
     scenes: list[Scene] | None = Field(default=None, min_length=5, max_length=7)
     suggested_music_mood: MusicMood = "corporate_tension"
@@ -151,13 +151,13 @@ class ProjectPlan(BaseModel):
         if self.beats is not None:
             if self.music is None:
                 raise ValueError("dual-host plans require a music query")
-            if not 8 <= len(self.beats) <= 12:
-                raise ValueError(f"dual-host plans require 8-12 beats, got {len(self.beats)}")
-            if self.beats[0].speaker != "alice":
-                raise ValueError("the opening hook beat must be spoken by Alice")
+            if not 12 <= len(self.beats) <= 14:
+                raise ValueError(f"dual-host plans require 12-14 beats, got {len(self.beats)}")
+            if self.beats[0].speaker not in ("maya", "alice"):
+                raise ValueError("the opening hook beat must be spoken by Maya")
             for previous, current in zip(self.beats, self.beats[1:]):
                 if current.speaker == previous.speaker:
-                    raise ValueError("dual-host beats must alternate Alice and Bob")
+                    raise ValueError("dual-host beats must alternate Maya and Jax")
             beat_ids = [beat.beat_id for beat in self.beats]
             if beat_ids != list(range(1, len(self.beats) + 1)):
                 raise ValueError("beat_id values must be sequential starting at 1")

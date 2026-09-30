@@ -26,8 +26,8 @@ class DualHostSchemaTests(unittest.TestCase):
         with patch.object(gemini_engine, "_generate_with_fallback", return_value=response):
             plan = gemini_engine._stage2_call("verified sample facts")
         speakers = [beat.speaker for beat in plan.beats or []]
-        self.assertEqual(len(speakers), 8)
-        self.assertEqual(speakers, ["alice", "bob"] * 4)
+        self.assertEqual(len(speakers), 14)
+        self.assertEqual(speakers, ["maya", "jax"] * 7)
         self.assertEqual(plan.music.mood, "tech_panic")
 
 
