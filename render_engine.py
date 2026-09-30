@@ -11,7 +11,9 @@ from typing import Optional
 from config import (
     AUDIO_CHANNELS,
     AVATAR_ALICE,
+    AVATAR_ALICE_PNG,
     AVATAR_BOB,
+    AVATAR_BOB_PNG,
     AVATAR_POS_ALICE,
     AVATAR_POS_BOB,
     AVATAR_SIZE,
@@ -81,8 +83,7 @@ def build_beat_filtergraph(
         f"[v0][v1]concat=n=2:v=1:a=0,setsar=1,settb=AVTB[background];\n"
         f"[2:v]format=rgba,scale=w='{pulse}':h='{pulse}':eval=frame,setsar=1[avatar];\n"
         f"[background][avatar]overlay=x={avatar_x}:y={avatar_y}:eval=frame:shortest=1[with_avatar];\n"
-        f"[with_avatar]subtitles='{escaped_sub}':fontsdir='C\\:/Windows/Fonts':"
-        f"force_style='Alignment=5,MarginV=0'[vout]"
+        f"[with_avatar]subtitles='{escaped_sub}':fontsdir='C\\:/Windows/Fonts'[vout]"
     )
 
 
@@ -116,7 +117,10 @@ def render_beat(
         cmd = [FFMPEG_BIN, "-y"]
         for clip_path in broll_paths:
             cmd.extend(["-stream_loop", "-1", "-i", str(clip_path)])
-        cmd.extend(["-loop", "1", "-framerate", "30", "-i", str(avatar_path)])
+        if avatar_path.suffix.casefold() == ".gif":
+            cmd.extend(["-ignore_loop", "0", "-i", str(avatar_path)])
+        else:
+            cmd.extend(["-loop", "1", "-framerate", "30", "-i", str(avatar_path)])
         cmd.extend([
             "-filter_complex_script", str(script_path),
             "-map", "[vout]", "-an", "-t", str(duration),
@@ -149,7 +153,10 @@ def render_all_beats(
         futures = {}
         for beat in target_beats:
             _, duration = audio_data[beat.beat_id]
-            avatar_path = AVATAR_ALICE if beat.speaker == "alice" else AVATAR_BOB
+            if beat.speaker == "alice":
+                avatar_path = AVATAR_ALICE if AVATAR_ALICE.is_file() else AVATAR_ALICE_PNG
+            else:
+                avatar_path = AVATAR_BOB if AVATAR_BOB.is_file() else AVATAR_BOB_PNG
             future = pool.submit(
                 render_beat,
                 beat,

@@ -32,6 +32,24 @@ def _speaker_ass_style(speaker: str | None) -> str:
     return {"alice": "Alice", "bob": "Bob"}.get((speaker or "").casefold(), "Default")
 
 
+def _active_word_color(speaker: str | None) -> str:
+    if (speaker or "").casefold() == "alice":
+        return r"\c&H00D900FF&"
+    if (speaker or "").casefold() == "bob":
+        return r"\c&H00FFFF00&"
+    return r"\c&H0014F0FF&"
+
+
+def _karaoke_chunk_text(chunk: list, active_index: int, speaker: str | None) -> str:
+    active_color = _active_word_color(speaker)
+    parts = []
+    for index, boundary in enumerate(chunk):
+        color = active_color if index == active_index else r"\c&H00FFFFFF&"
+        parts.append("{" + color + "}" + _ass_text(boundary[2]))
+    parts.append(r"{\c&H00FFFFFF&}")
+    return " ".join(parts)
+
+
 def _speaker_for_voice(voice: str) -> str | None:
     normalized_voice = voice.casefold()
     for speaker, mapped_voice in VOICE_MAP.items():
@@ -62,13 +80,16 @@ def _write_ass(
         chunk = boundaries[index:index + chunk_size]
         if not chunk:
             break
-        start = chunk[0][0]
-        end = chunk[-1][1]
-        text = " ".join(boundary[2] for boundary in chunk).upper()
-        dialogue_lines.append(
-            f"Dialogue: 0,{_ass_timestamp(start)},{_ass_timestamp(end)},"
-            f"{_speaker_ass_style(speaker)},,0,0,0,,{_ass_text(text)}"
-        )
+        style = _speaker_ass_style(speaker)
+        for active_index, boundary in enumerate(chunk):
+            start, end = boundary[0], boundary[1]
+            if end <= start:
+                continue
+            karaoke_text = _karaoke_chunk_text(chunk, active_index, speaker)
+            dialogue_lines.append(
+                f"Dialogue: 0,{_ass_timestamp(start)},{_ass_timestamp(end)}"
+                f",{style},,0,0,0,,{karaoke_text}"
+            )
         index += chunk_size
 
     subtitle_path.write_text(
@@ -80,9 +101,9 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Arial,62,&H0000FFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,3,8,40,40,850,1
-Style: Alice,Arial,62,&H00D900FF,&H0000FFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,3,8,40,40,850,1
-Style: Bob,Arial,62,&H0000D4FF,&H0000FFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,3,8,40,40,850,1
+Style: Default,Arial Black,74,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,5,2,2,40,40,960,1
+Style: Alice,Arial Black,74,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,5,2,2,40,40,960,1
+Style: Bob,Arial Black,74,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,5,2,2,40,40,960,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text

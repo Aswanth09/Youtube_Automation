@@ -13,6 +13,7 @@ import wave
 
 import config
 import render_engine
+import tts_engine
 from assemble import build_master_narration_wav
 from config import AUDIO_CHANNELS, SAMPLE_RATE
 
@@ -21,23 +22,34 @@ class AvatarBootstrapTests(unittest.TestCase):
     def test_missing_default_avatars_are_generated(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             avatar_dir = Path(temporary)
-            alice_path = avatar_dir / "alice.png"
-            bob_path = avatar_dir / "bob.png"
+            alice_path = avatar_dir / "alice.gif"
+            bob_path = avatar_dir / "bob.gif"
             with (
                 patch.object(config, "AVATAR_DIR", avatar_dir),
                 patch.object(config, "AVATAR_ALICE", alice_path),
                 patch.object(config, "AVATAR_BOB", bob_path),
+                patch.object(config, "AVATAR_ALICE_PNG", avatar_dir / "alice.png"),
+                patch.object(config, "AVATAR_BOB_PNG", avatar_dir / "bob.png"),
             ):
                 alice, bob = config.ensure_default_avatars()
 
             self.assertTrue(alice.is_file())
             self.assertTrue(bob.is_file())
-            alice_image = Image.open(alice).convert("RGBA")
-            bob_image = Image.open(bob).convert("RGBA")
+            with Image.open(alice) as image:
+                alice_image = image.convert("RGBA")
+                alice_frames = image.n_frames
+                alice_info = dict(image.info)
+            with Image.open(bob) as image:
+                bob_frames = image.n_frames
+                bob_info = dict(image.info)
             self.assertEqual(alice_image.size, (512, 512))
             self.assertEqual(alice_image.getpixel((0, 0))[3], 0)
-            self.assertEqual(alice_image.getpixel((20, 256)), (217, 0, 255, 255))
-            self.assertEqual(bob_image.getpixel((20, 256)), (0, 212, 255, 255))
+            self.assertEqual(alice_frames, 4)
+            self.assertEqual(bob_frames, 4)
+            self.assertEqual(alice_info.get("loop"), 0)
+            self.assertEqual(bob_info.get("loop"), 0)
+            self.assertEqual(alice_info.get("duration"), 120)
+            self.assertEqual(bob_info.get("duration"), 120)
 
 
 class BeatFiltergraphTests(unittest.TestCase):
@@ -60,8 +72,12 @@ Dialogue: 0,0:00:00.00,0:00:00.40,Default,,0,0,0,,TEST CAPTION
 """,
                 encoding="utf-8",
             )
-            avatar_path = root / "avatar.png"
-            Image.new("RGBA", (64, 64), (255, 0, 255, 255)).save(avatar_path)
+            avatar_path = root / "avatar.gif"
+            frames = [Image.new("RGBA", (64, 64), color) for color in (
+                (255, 0, 255, 255), (240, 0, 240, 255),
+                (220, 0, 220, 255), (240, 0, 240, 255),
+            )]
+            frames[0].save(avatar_path, save_all=True, append_images=frames[1:], duration=120, loop=0)
             beat = SimpleNamespace(beat_id=1, speaker="alice")
             graph = render_engine.build_beat_filtergraph(beat, 0.4, ass_path)
             graph_path = root / "beat.ffgraph"
@@ -71,16 +87,35 @@ Dialogue: 0,0:00:00.00,0:00:00.40,Default,,0,0,0,,TEST CAPTION
                 ffmpeg, "-v", "error", "-y",
                 "-f", "lavfi", "-i", "testsrc=size=180x320:rate=30:duration=0.4",
                 "-f", "lavfi", "-i", "testsrc2=size=180x320:rate=30:duration=0.4",
-                "-loop", "1", "-framerate", "30", "-i", str(avatar_path),
+                "-ignore_loop", "0", "-i", str(avatar_path),
                 "-filter_complex_script", str(graph_path),
                 "-map", "[vout]", "-t", "0.4", "-f", "null", "NUL",
             ]
             subprocess.run(command, check=True, capture_output=True, text=True, timeout=90)
+            self.assertEqual(command[command.index("-ignore_loop") + 1], "0")
             self.assertIn("setsar=1", graph)
             self.assertIn("concat=n=2:v=1:a=0", graph)
             self.assertIn("overlay=x=60:y=1320", graph)
             self.assertIn("subtitles=", graph)
-            self.assertIn("force_style='Alignment=5,MarginV=0'", graph)
+            self.assertNotIn("force_style=", graph)
+
+    def test_subtitles_use_center_safe_zone_and_word_karaoke(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "karaoke.ass"
+            boundaries = [
+                (0, 4800, "wait", "alice"),
+                (4800, 9600, "bob", "alice"),
+                (9600, 14400, "really", "alice"),
+            ]
+            tts_engine._write_ass(path, boundaries)
+            content = path.read_text(encoding="utf-8")
+            self.assertIn("Arial Black,74", content)
+            self.assertIn(",2,40,40,960,1", content)
+            self.assertIn(r"{\c&H00D900FF&}WAIT", content)
+            self.assertIn(r"{\c&H00FFFFFF&}BOB", content)
+            self.assertIn(r"{\c&H00D900FF&}REALLY", content)
+            dialogue = [line for line in content.splitlines() if line.startswith("Dialogue:")]
+            self.assertEqual(len(dialogue), 3)
 
     def test_master_narration_inserts_sample_accurate_gap(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

@@ -35,44 +35,112 @@ VOICE_MAP = {"alice": "en-US-JennyNeural", "bob": "en-US-GuyNeural"}
 INTER_TURN_GAP_MS = 120
 ASSETS_DIR = Path(__file__).resolve().parent / "assets"
 AVATAR_DIR = ASSETS_DIR / "avatars"
-AVATAR_ALICE = AVATAR_DIR / "alice.png"
-AVATAR_BOB = AVATAR_DIR / "bob.png"
+AVATAR_ALICE = AVATAR_DIR / "alice.gif"
+AVATAR_BOB = AVATAR_DIR / "bob.gif"
+AVATAR_ALICE_PNG = AVATAR_DIR / "alice.png"
+AVATAR_BOB_PNG = AVATAR_DIR / "bob.png"
 AVATAR_POS_ALICE = (60, 1320)
 AVATAR_POS_BOB = (680, 1200)
 AVATAR_SIZE = 280
 
 
 def ensure_default_avatars() -> tuple[Path, Path]:
-    """Create circular neon placeholders for missing host avatar images."""
+    """Create looping neon character avatars, retaining PNG fallback support."""
     try:
-        from PIL import Image, ImageDraw, ImageFont
+        from PIL import Image, ImageDraw
     except ImportError as error:
+        if AVATAR_ALICE_PNG.is_file() and AVATAR_BOB_PNG.is_file():
+            return AVATAR_ALICE_PNG, AVATAR_BOB_PNG
         raise RuntimeError("Pillow is required to generate default host avatars") from error
 
     AVATAR_DIR.mkdir(parents=True, exist_ok=True)
     avatar_specs = (
-        (AVATAR_ALICE, "A", (217, 0, 255, 255)),
-        (AVATAR_BOB, "B", (0, 212, 255, 255)),
+        (AVATAR_ALICE, "alice", (217, 0, 255, 255)),
+        (AVATAR_BOB, "bob", (0, 212, 255, 255)),
     )
     image_size = 512
-    for path, initial, neon in avatar_specs:
-        if path.is_file():
-            continue
+    mouth_shapes = ((0, 0), (18, 10), (30, 28), (18, 10))
+
+    def draw_character(kind: str, neon: tuple[int, int, int, int], mouth: tuple[int, int]):
         image = Image.new("RGBA", (image_size, image_size), (0, 0, 0, 0))
         draw = ImageDraw.Draw(image)
-        draw.ellipse((12, 12, image_size - 12, image_size - 12), fill=(12, 16, 28, 245))
-        draw.ellipse((18, 18, image_size - 18, image_size - 18), outline=neon, width=20)
-        draw.ellipse((48, 48, image_size - 48, image_size - 48), outline=(*neon[:3], 120), width=4)
+        for inset, alpha, width in ((3, 28, 34), (8, 60, 20), (18, 255, 10)):
+            draw.ellipse(
+                (inset, inset, image_size - inset, image_size - inset),
+                outline=(*neon[:3], alpha),
+                width=width,
+            )
+        draw.ellipse((35, 35, 477, 477), fill=(11, 16, 31, 255))
+
+        if kind == "alice":
+            hair = (54, 28, 95, 255)
+            draw.ellipse((104, 68, 408, 430), fill=hair)
+            draw.polygon([(120, 190), (95, 405), (160, 440), (184, 205)], fill=hair)
+            draw.polygon([(365, 175), (425, 400), (360, 445), (334, 195)], fill=hair)
+            skin = (245, 190, 165, 255)
+            face_box = (143, 105, 369, 389)
+        else:
+            hair = (37, 39, 54, 255)
+            draw.ellipse((115, 69, 397, 410), fill=hair)
+            draw.rectangle((136, 140, 376, 360), fill=hair)
+            skin = (224, 174, 145, 255)
+            face_box = (143, 112, 369, 390)
+
+        draw.ellipse(face_box, fill=skin)
+        draw.arc((187, 188, 235, 227), 190, 350, fill=(35, 27, 34, 255), width=8)
+        draw.arc((278, 188, 326, 227), 190, 350, fill=(35, 27, 34, 255), width=8)
+        draw.ellipse((204, 202, 218, 218), fill=(17, 20, 32, 255))
+        draw.ellipse((296, 202, 310, 218), fill=(17, 20, 32, 255))
+
+        if kind == "alice":
+            draw.polygon([(135, 176), (153, 92), (238, 72), (212, 138), (180, 158)], fill=hair)
+            draw.polygon([(248, 82), (355, 115), (378, 185), (325, 147), (284, 137)], fill=hair)
+        else:
+            draw.polygon([(133, 158), (145, 99), (207, 69), (295, 78), (372, 125), (377, 164), (327, 132), (269, 145), (210, 127)], fill=hair)
+            draw.rounded_rectangle((176, 188, 249, 235), radius=12, outline=(31, 42, 64, 255), width=7)
+            draw.rounded_rectangle((270, 188, 343, 235), radius=12, outline=(31, 42, 64, 255), width=7)
+            draw.line((249, 208, 270, 208), fill=(31, 42, 64, 255), width=7)
+
+        draw.line((256, 220, 242, 269, 260, 273), fill=(179, 110, 105, 255), width=5)
+        mouth_width, mouth_height = mouth
+        if mouth_height == 0:
+            draw.arc((221, 292, 291, 333), 15, 165, fill=(95, 35, 54, 255), width=7)
+        else:
+            mouth_box = (256 - mouth_width // 2, 307 - mouth_height // 2,
+                         256 + mouth_width // 2, 307 + mouth_height // 2)
+            draw.ellipse(mouth_box, fill=(89, 23, 47, 255))
+            if mouth_height >= 20:
+                draw.rounded_rectangle(
+                    (mouth_box[0] + 5, mouth_box[1] + 3, mouth_box[2] - 5, mouth_box[1] + 11),
+                    radius=3,
+                    fill=(255, 241, 230, 255),
+                )
+        return image
+
+    for gif_path, kind, neon in avatar_specs:
+        if gif_path.is_file():
+            continue
+        frames = [draw_character(kind, neon, mouth) for mouth in mouth_shapes]
         try:
-            font = ImageFont.truetype("arial.ttf", 230)
+            frames[0].save(
+                gif_path,
+                save_all=True,
+                append_images=frames[1:],
+                duration=120,
+                loop=0,
+                disposal=2,
+                optimize=False,
+                transparency=0,
+            )
         except OSError:
-            font = ImageFont.load_default()
-        bounds = draw.textbbox((0, 0), initial, font=font)
-        x = (image_size - (bounds[2] - bounds[0])) / 2 - bounds[0]
-        y = (image_size - (bounds[3] - bounds[1])) / 2 - bounds[1]
-        draw.text((x, y), initial, fill=(255, 255, 255, 255), font=font)
-        image.save(path, format="PNG")
-    return AVATAR_ALICE, AVATAR_BOB
+            png_fallback = AVATAR_ALICE_PNG if kind == "alice" else AVATAR_BOB_PNG
+            if not png_fallback.is_file():
+                raise
+
+    return (
+        AVATAR_ALICE if AVATAR_ALICE.is_file() else AVATAR_ALICE_PNG,
+        AVATAR_BOB if AVATAR_BOB.is_file() else AVATAR_BOB_PNG,
+    )
 
 
 @dataclass(frozen=True)

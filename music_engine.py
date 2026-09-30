@@ -155,11 +155,7 @@ def ensure_music_bed(plan_music: MusicQuery, output_dir: Path) -> Path:
                     f"No unconsumed track for mood {plan_music.mood!r}, and fallback is missing: {fallback_path}"
                 )
             fallback_id = "fallback"
-            if fallback_id in recently_used:
-                raise RuntimeError(
-                    "The curated mood pool and fallback track were used in the last five Shorts; "
-                    "add more tracks to the local music library."
-                )
+            log.warning("Pool exhausted or track recently used; using fallback track")
             track = MusicTrack(fallback_id, fallback_path, plan_music.mood, plan_music.tempo)
 
         output_path = _copy_to_output(track, output_dir)
