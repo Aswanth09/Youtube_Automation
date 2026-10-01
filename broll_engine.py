@@ -53,6 +53,12 @@ QUERY_MODIFIERS = {
     "rapid", "rapidly", "red", "shattered", "stressed",
 }
 
+BANNED_BROLL_TERMS = {
+    "bathroom", "washroom", "toilet", "restroom", "shower", "wc",
+    "window curtain", "living room", "bedroom", "kitchen sink",
+    "makeup", "cosmetics", "women only", "men only", "fitting room"
+}
+
 
 def _connect() -> sqlite3.Connection:
     conn = sqlite3.connect(SETTINGS.db_path, timeout=30)
@@ -244,6 +250,9 @@ def resolve_clip_for_scene(
         query_sequence.extend(EMERGENCY_FALLBACK_QUERIES)
 
         for query in dict.fromkeys(query_sequence):
+            if any(banned in query.casefold() for banned in BANNED_BROLL_TERMS):
+                continue
+
             hit = _local_cache_lookup(conn, query, exclude)
             if hit:
                 clip_id, path = hit
@@ -256,6 +265,11 @@ def resolve_clip_for_scene(
             for video in candidates:
                 clip_id = str(video["id"])
                 if clip_id in exclude:
+                    continue
+
+                tags = " ".join(video.get("tags", [])).casefold()
+                url = video.get("url", "").casefold()
+                if any(banned in tags or banned in url for banned in BANNED_BROLL_TERMS):
                     continue
 
                 downloadable_files = [

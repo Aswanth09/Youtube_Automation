@@ -29,13 +29,13 @@ def _ass_text(text: str) -> str:
 
 def _speaker_ass_style(speaker: str | None) -> str:
     """Map optional speaker labels to dedicated ASS styles."""
-    return {"alice": "Alice", "bob": "Bob", "maya": "Alice", "jax": "Bob"}.get((speaker or "").casefold(), "Default")
+    return {"maya": "Maya", "jax": "Jax"}.get((speaker or "").casefold(), "Default")
 
 
 def _active_word_color(speaker: str | None) -> str:
-    if (speaker or "").casefold() in ("alice", "maya"):
+    if (speaker or "").casefold() == "maya":
         return r"\c&H00D900FF&"
-    if (speaker or "").casefold() in ("bob", "jax"):
+    if (speaker or "").casefold() == "jax":
         return r"\c&H00FFFF00&"
     return r"\c&H0014F0FF&"
 
@@ -102,8 +102,8 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Default,Arial Black,74,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,5,2,2,40,40,960,1
-Style: Alice,Arial Black,74,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,5,2,2,40,40,960,1
-Style: Bob,Arial Black,74,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,5,2,2,40,40,960,1
+Style: Maya,Arial Black,74,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,5,2,2,40,40,960,1
+Style: Jax,Arial Black,74,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,5,2,2,40,40,960,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text

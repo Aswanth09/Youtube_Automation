@@ -22,34 +22,38 @@ class AvatarBootstrapTests(unittest.TestCase):
     def test_missing_default_avatars_are_generated(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             avatar_dir = Path(temporary)
-            alice_path = avatar_dir / "alice.gif"
-            bob_path = avatar_dir / "bob.gif"
+            maya_path = avatar_dir / "maya_talking.gif"
+            jax_path = avatar_dir / "jax_talking.gif"
+            maya_idle = avatar_dir / "maya_idle.png"
+            jax_idle = avatar_dir / "jax_idle.png"
             with (
                 patch.object(config, "AVATAR_DIR", avatar_dir),
-                patch.object(config, "AVATAR_ALICE", alice_path),
-                patch.object(config, "AVATAR_BOB", bob_path),
-                patch.object(config, "AVATAR_ALICE_PNG", avatar_dir / "alice.png"),
-                patch.object(config, "AVATAR_BOB_PNG", avatar_dir / "bob.png"),
+                patch.object(config, "AVATAR_MAYA_TALKING", maya_path),
+                patch.object(config, "AVATAR_JAX_TALKING", jax_path),
+                patch.object(config, "AVATAR_MAYA_IDLE", maya_idle),
+                patch.object(config, "AVATAR_JAX_IDLE", jax_idle),
             ):
-                alice, bob = config.ensure_default_avatars()
+                maya, jax = config.ensure_default_avatars()
 
-            self.assertTrue(alice.is_file())
-            self.assertTrue(bob.is_file())
-            with Image.open(alice) as image:
-                alice_image = image.convert("RGBA")
-                alice_frames = image.n_frames
-                alice_info = dict(image.info)
-            with Image.open(bob) as image:
-                bob_frames = image.n_frames
-                bob_info = dict(image.info)
-            self.assertEqual(alice_image.size, (512, 512))
-            self.assertEqual(alice_image.getpixel((0, 0))[3], 0)
-            self.assertEqual(alice_frames, 4)
-            self.assertEqual(bob_frames, 4)
-            self.assertEqual(alice_info.get("loop"), 0)
-            self.assertEqual(bob_info.get("loop"), 0)
-            self.assertEqual(alice_info.get("duration"), 120)
-            self.assertEqual(bob_info.get("duration"), 120)
+            self.assertTrue(maya.is_file())
+            self.assertTrue(jax.is_file())
+            self.assertTrue(maya_idle.is_file())
+            self.assertTrue(jax_idle.is_file())
+            with Image.open(maya) as image:
+                maya_image = image.convert("RGBA")
+                maya_frames = image.n_frames
+                maya_info = dict(image.info)
+            with Image.open(jax) as image:
+                jax_frames = image.n_frames
+                jax_info = dict(image.info)
+            self.assertEqual(maya_image.size, (512, 512))
+            self.assertEqual(maya_image.getpixel((0, 0))[3], 0)
+            self.assertEqual(maya_frames, 4)
+            self.assertEqual(jax_frames, 4)
+            self.assertEqual(maya_info.get("loop"), 0)
+            self.assertEqual(jax_info.get("loop"), 0)
+            self.assertEqual(maya_info.get("duration"), 120)
+            self.assertEqual(jax_info.get("duration"), 120)
 
 
 class BeatFiltergraphTests(unittest.TestCase):
@@ -78,7 +82,7 @@ Dialogue: 0,0:00:00.00,0:00:00.40,Default,,0,0,0,,TEST CAPTION
                 (220, 0, 220, 255), (240, 0, 240, 255),
             )]
             frames[0].save(avatar_path, save_all=True, append_images=frames[1:], duration=120, loop=0)
-            beat = SimpleNamespace(beat_id=1, speaker="alice")
+            beat = SimpleNamespace(beat_id=1, speaker="maya")
             graph = render_engine.build_beat_filtergraph(beat, 0.4, ass_path)
             graph_path = root / "beat.ffgraph"
             graph_path.write_text(graph, encoding="utf-8")
@@ -103,16 +107,16 @@ Dialogue: 0,0:00:00.00,0:00:00.40,Default,,0,0,0,,TEST CAPTION
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "karaoke.ass"
             boundaries = [
-                (0, 4800, "wait", "alice"),
-                (4800, 9600, "bob", "alice"),
-                (9600, 14400, "really", "alice"),
+                (0, 4800, "wait", "maya"),
+                (4800, 9600, "jax", "maya"),
+                (9600, 14400, "really", "maya"),
             ]
             tts_engine._write_ass(path, boundaries)
             content = path.read_text(encoding="utf-8")
             self.assertIn("Arial Black,74", content)
             self.assertIn(",2,40,40,960,1", content)
             self.assertIn(r"{\c&H00D900FF&}WAIT", content)
-            self.assertIn(r"{\c&H00FFFFFF&}BOB", content)
+            self.assertIn(r"{\c&H00FFFFFF&}JAX", content)
             self.assertIn(r"{\c&H00D900FF&}REALLY", content)
             dialogue = [line for line in content.splitlines() if line.startswith("Dialogue:")]
             self.assertEqual(len(dialogue), 3)

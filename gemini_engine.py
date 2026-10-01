@@ -97,8 +97,20 @@ CRITICAL CONSTRAINTS:
 
 * Each `line` MUST contain strictly 10-18 words. No rambling, no dead air, no academic lectures.
 * Use 12-14 sequential `beat_id` values (target 14).
-* Every beat needs exactly two distinct, concrete, search-friendly B-roll queries (2-4 words, physical nouns and actions like "panicked trader holding head", "bank vault door closing"). NEVER include camera angles or abstract adjectives.
 * Never invent figures, memos, or dates not grounded in the facts.
+
+CRITICAL B-ROLL SEARCH RULES (Universal Stock Matching):
+Each beat must specify exactly two distinct, concrete visual queries formatted as: `[Physical Subject] + [Action / Environment]` (strictly 2 to 4 words).
+- STOCK FOOTAGE REALITY: Pexels indexes real-world filmed footage, NOT abstract concepts, proprietary campus names, or UI dialog boxes.
+- FORBIDDEN:
+  * Never use proprietary trademarks or campus names (e.g., 'Googleplex', 'Apple Park', 'OpenAI HQ', 'Kremlin room'). Use visual proxies: 'modern glass corporate office', 'high tech headquarters building', 'government conference room'.
+  * Never use abstract UI/software states (e.g., 'error popup dialog', 'code red alert', 'ai thinking'). Use physical human/hardware proxies: 'frustrated programmer staring at monitor', 'blinking server rack lights', 'hands typing urgently on keyboard'.
+  * Never use isolated generic nouns that match facilities (e.g., 'sign', 'entrance', 'door', 'window', 'board'). Always qualify: 'corporate glass exterior', 'office hallway corridor', 'cybersecurity operations center'.
+- GENRE EXAMPLES:
+  * AI & Tech: 'glowing data center servers', 'robotics lab engineer', 'futuristic microchip macro'
+  * Military / Geopolitics: 'military command center screens', 'satellite map radar', 'press briefing microphone podium'
+  * Crime / Investigation: 'detective reviewing evidence board', 'police tape flashing sirens', 'courtroom judge gavel'
+  * Business & Markets: 'stock market exchange trading floor', 'empty skyscraper boardroom', 'financial charts digital screen'
 
 MUSIC:
 
@@ -268,11 +280,11 @@ def _validate_stage2_constraints(plan: ProjectPlan) -> None:
     if plan.beats is not None:
         if not 12 <= len(plan.beats) <= 14:
             raise ValueError(f"Dual-host Short requires 12-14 beats, got {len(plan.beats)}")
-        if plan.beats[0].speaker not in ("maya", "alice"):
+        if plan.beats[0].speaker != "maya":
             raise ValueError("The first hook beat must be spoken by Maya")
-        if not re.search(r"\b(jax|bob)\b", plan.beats[0].line, flags=re.IGNORECASE):
+        if not re.search(r"\bjax\b", plan.beats[0].line, flags=re.IGNORECASE):
             raise ValueError("Beat 1 must address Jax by name")
-        if not re.search(r"\b(maya|alice)\b", plan.beats[1].line, flags=re.IGNORECASE):
+        if not re.search(r"\bmaya\b", plan.beats[1].line, flags=re.IGNORECASE):
             raise ValueError("Beat 2 must address Maya by name")
         for previous, current in zip(plan.beats, plan.beats[1:]):
             if previous.speaker == current.speaker:

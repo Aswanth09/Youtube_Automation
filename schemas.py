@@ -153,7 +153,7 @@ class ProjectPlan(BaseModel):
                 raise ValueError("dual-host plans require a music query")
             if not 12 <= len(self.beats) <= 14:
                 raise ValueError(f"dual-host plans require 12-14 beats, got {len(self.beats)}")
-            if self.beats[0].speaker not in ("maya", "alice"):
+            if self.beats[0].speaker != "maya":
                 raise ValueError("the opening hook beat must be spoken by Maya")
             for previous, current in zip(self.beats, self.beats[1:]):
                 if current.speaker == previous.speaker:

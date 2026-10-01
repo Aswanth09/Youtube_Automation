@@ -17,7 +17,7 @@ from schemas import ProjectPlan
 class DualHostSchemaTests(unittest.TestCase):
     def test_repeated_speaker_is_rejected(self) -> None:
         plan_data = json.loads(gemini_engine.STAGE2_JSON_EXAMPLE)
-        plan_data["beats"][1]["speaker"] = "alice"
+        plan_data["beats"][1]["speaker"] = "maya"
         with self.assertRaises(ValidationError):
             ProjectPlan.model_validate(plan_data)
 

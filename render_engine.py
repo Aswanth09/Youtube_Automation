@@ -10,16 +10,10 @@ from typing import Optional
 
 from config import (
     AUDIO_CHANNELS,
-    AVATAR_ALICE,
-    AVATAR_ALICE_PNG,
-    AVATAR_BOB,
-    AVATAR_BOB_PNG,
-    AVATAR_JAX,
-    AVATAR_JAX_PNG,
-    AVATAR_MAYA,
-    AVATAR_MAYA_PNG,
-    AVATAR_POS_ALICE,
-    AVATAR_POS_BOB,
+    AVATAR_JAX_IDLE,
+    AVATAR_JAX_TALKING,
+    AVATAR_MAYA_IDLE,
+    AVATAR_MAYA_TALKING,
     AVATAR_POS_JAX,
     AVATAR_POS_MAYA,
     AVATAR_SIZE,
@@ -70,7 +64,6 @@ def build_beat_filtergraph(
     subtitles_path: Path,
     width: int = VIDEO_WIDTH,
     height: int = VIDEO_HEIGHT,
-    dual_avatars: bool = False,
 ) -> str:
     """Build the script-file graph for two-cut video, avatar(s), and captions."""
     if not subtitles_path.is_file():
@@ -78,40 +71,19 @@ def build_beat_filtergraph(
 
     first_duration = duration / 2
     second_duration = duration - first_duration
-    speaker = getattr(beat, "speaker", "").casefold()
-    is_maya = speaker in ("maya", "alice")
+    active_speaker = getattr(beat, "speaker", "").casefold()
     escaped_sub = str(subtitles_path.resolve()).replace("\\", "/").replace(":", r"\:")
     first_chain = _vertical_motion_filter(duration, first_duration, width, height)
     second_chain = _vertical_motion_filter(duration, second_duration, width, height, first_duration)
     pulse = f"{AVATAR_SIZE}+12*(0.5+0.5*sin(2*PI*t))"
-    steady = f"{AVATAR_SIZE}"
 
-    if not dual_avatars:
-        avatar_x, avatar_y = AVATAR_POS_MAYA if is_maya else AVATAR_POS_JAX
-        return (
-            f"[0:v]{first_chain}[v0];\n"
-            f"[1:v]{second_chain}[v1];\n"
-            f"[v0][v1]concat=n=2:v=1:a=0,setsar=1,settb=AVTB[background];\n"
-            f"[2:v]format=rgba,scale=w='{pulse}':h='{pulse}':eval=frame,setsar=1[avatar];\n"
-            f"[background][avatar]overlay=x={avatar_x}:y={avatar_y}:eval=frame:shortest=1[with_avatar];\n"
-            f"[with_avatar]subtitles='{escaped_sub}':fontsdir='C\\:/Windows/Fonts'[vout]"
-        )
-
-    if is_maya:
-        maya_filter = f"[2:v]format=rgba,scale=w='{pulse}':h='{pulse}':eval=frame,setsar=1[maya_av];\n"
-        jax_filter = f"[3:v]format=rgba,colorchannelmixer=aa=0.85,scale=w={steady}:h={steady},setsar=1[jax_av];\n"
-    else:
-        maya_filter = f"[2:v]format=rgba,colorchannelmixer=aa=0.85,scale=w={steady}:h={steady},setsar=1[maya_av];\n"
-        jax_filter = f"[3:v]format=rgba,scale=w='{pulse}':h='{pulse}':eval=frame,setsar=1[jax_av];\n"
-
+    avatar_x, avatar_y = AVATAR_POS_MAYA if active_speaker == "maya" else AVATAR_POS_JAX
     return (
         f"[0:v]{first_chain}[v0];\n"
         f"[1:v]{second_chain}[v1];\n"
         f"[v0][v1]concat=n=2:v=1:a=0,setsar=1,settb=AVTB[background];\n"
-        f"{maya_filter}"
-        f"{jax_filter}"
-        f"[background][maya_av]overlay=x=60:y=1320:eval=frame:shortest=1[tmp];\n"
-        f"[tmp][jax_av]overlay=x=680:y=1200:eval=frame:shortest=1[with_avatar];\n"
+        f"[2:v]format=rgba,scale=w='{pulse}':h='{pulse}':eval=frame,setsar=1[active_av];\n"
+        f"[background][active_av]overlay=x={avatar_x}:y={avatar_y}:eval=frame:shortest=1[with_avatar];\n"
         f"[with_avatar]subtitles='{escaped_sub}':fontsdir='C\\:/Windows/Fonts'[vout]"
     )
 
@@ -125,28 +97,17 @@ def render_beat(
     out_dir: Path | None = None,
     width: int = VIDEO_WIDTH,
     height: int = VIDEO_HEIGHT,
-    maya_avatar: Path | None = None,
-    jax_avatar: Path | None = None,
 ) -> Path:
     if (width, height) != (VIDEO_WIDTH, VIDEO_HEIGHT):
         raise ValueError(f"Beat render dimensions must be {VIDEO_WIDTH}x{VIDEO_HEIGHT}")
     if len(broll_paths) != 2:
         raise ValueError(f"Beat {beat.beat_id} requires exactly two B-roll clips")
 
-    if maya_avatar is None and jax_avatar is None:
-        if avatar_path is not None and not isinstance(avatar_path, (tuple, list)):
-            maya_avatar = None
-            jax_avatar = None
-        else:
-            maya_avatar = AVATAR_MAYA if AVATAR_MAYA.is_file() else (AVATAR_ALICE if AVATAR_ALICE.is_file() else AVATAR_ALICE_PNG)
-            jax_avatar = AVATAR_JAX if AVATAR_JAX.is_file() else (AVATAR_BOB if AVATAR_BOB.is_file() else AVATAR_BOB_PNG)
+    active_speaker = getattr(beat, "speaker", "").casefold()
+    if avatar_path is None:
+        avatar_path = AVATAR_MAYA_TALKING if active_speaker == "maya" else AVATAR_JAX_TALKING
 
-    use_dual = maya_avatar is not None and jax_avatar is not None
-    required_assets = list(broll_paths) + [subtitles_path]
-    if use_dual:
-        required_assets.extend([maya_avatar, jax_avatar])
-    elif avatar_path is not None:
-        required_assets.append(avatar_path)
+    required_assets = list(broll_paths) + [subtitles_path, avatar_path]
 
     for asset_path in required_assets:
         if asset_path and not asset_path.is_file():
@@ -154,7 +115,7 @@ def render_beat(
 
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"beat_{beat.beat_id:03d}.mp4"
-    filtergraph = build_beat_filtergraph(beat, duration, subtitles_path, width, height, dual_avatars=use_dual)
+    filtergraph = build_beat_filtergraph(beat, duration, subtitles_path, width, height)
     script_path = None
     try:
         with tempfile.NamedTemporaryFile("w", suffix=".ffgraph", encoding="utf-8", delete=False) as graph_file:
@@ -164,18 +125,11 @@ def render_beat(
         cmd = [FFMPEG_BIN, "-y"]
         for clip_path in broll_paths:
             cmd.extend(["-stream_loop", "-1", "-i", str(clip_path)])
-        if use_dual:
-            for av in (maya_avatar, jax_avatar):
-                if av.suffix.casefold() == ".gif":
-                    cmd.extend(["-ignore_loop", "0", "-i", str(av)])
-                else:
-                    cmd.extend(["-loop", "1", "-framerate", "30", "-i", str(av)])
+            
+        if avatar_path.suffix.casefold() == ".gif":
+            cmd.extend(["-ignore_loop", "0", "-i", str(avatar_path)])
         else:
-            av = avatar_path
-            if av.suffix.casefold() == ".gif":
-                cmd.extend(["-ignore_loop", "0", "-i", str(av)])
-            else:
-                cmd.extend(["-loop", "1", "-framerate", "30", "-i", str(av)])
+            cmd.extend(["-loop", "1", "-framerate", "30", "-i", str(avatar_path)])
 
         cmd.extend([
             "-filter_complex_script", str(script_path),
@@ -205,24 +159,22 @@ def render_all_beats(
     target_beats = beats[:PREVIEW_SCENE_LIMIT] if preview else beats
     max_workers = min(SETTINGS.max_render_workers, len(target_beats)) or 1
     results: dict[int, Path] = {}
-    maya_avatar = AVATAR_MAYA if AVATAR_MAYA.is_file() else (AVATAR_ALICE if AVATAR_ALICE.is_file() else AVATAR_ALICE_PNG)
-    jax_avatar = AVATAR_JAX if AVATAR_JAX.is_file() else (AVATAR_BOB if AVATAR_BOB.is_file() else AVATAR_BOB_PNG)
     with ProcessPoolExecutor(max_workers=max_workers) as pool:
         futures = {}
         for beat in target_beats:
             _, duration = audio_data[beat.beat_id]
+            active_speaker = getattr(beat, "speaker", "").casefold()
+            active_avatar = AVATAR_MAYA_TALKING if active_speaker == "maya" else AVATAR_JAX_TALKING
             future = pool.submit(
                 render_beat,
                 beat,
                 broll_paths[beat.beat_id],
-                None,
+                active_avatar,
                 subtitles_paths[beat.beat_id],
                 duration,
                 out_dir,
                 VIDEO_WIDTH,
                 VIDEO_HEIGHT,
-                maya_avatar,
-                jax_avatar,
             )
             futures[future] = beat.beat_id
         for future in as_completed(futures):
