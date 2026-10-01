@@ -75,13 +75,21 @@ def build_beat_filtergraph(
     escaped_sub = str(subtitles_path.resolve()).replace("\\", "/").replace(":", r"\:")
     first_chain = _vertical_motion_filter(duration, first_duration, width, height)
     second_chain = _vertical_motion_filter(duration, second_duration, width, height, first_duration)
-    pulse = f"{AVATAR_SIZE}+12*(0.5+0.5*sin(2*PI*t))"
+    
+    camera_motion = getattr(getattr(beat, "visual_direction", None), "camera_motion", "slow push-in")
+    if camera_motion == "slow push-in":
+        bg_filter = f"[bg_raw]scale=eval=frame:w='{width}*(1+0.05*t/{duration})':h='{height}*(1+0.05*t/{duration})',crop={width}:{height}[background];\n"
+    else:
+        bg_filter = f"[bg_raw]scale={width}:{height}[background];\n"
 
+    pulse = f"{AVATAR_SIZE}+12*(0.5+0.5*sin(2*PI*t))"
     avatar_x, avatar_y = AVATAR_POS_MAYA if active_speaker == "maya" else AVATAR_POS_JAX
+
     return (
         f"[0:v]{first_chain}[v0];\n"
         f"[1:v]{second_chain}[v1];\n"
-        f"[v0][v1]concat=n=2:v=1:a=0,setsar=1,settb=AVTB[background];\n"
+        f"[v0][v1]concat=n=2:v=1:a=0,setsar=1,settb=AVTB[bg_raw];\n"
+        f"{bg_filter}"
         f"[2:v]format=rgba,scale=w='{pulse}':h='{pulse}':eval=frame,setsar=1[active_av];\n"
         f"[background][active_av]overlay=x={avatar_x}:y={avatar_y}:eval=frame:shortest=1[with_avatar];\n"
         f"[with_avatar]subtitles='{escaped_sub}':fontsdir='C\\:/Windows/Fonts'[vout]"
@@ -285,3 +293,41 @@ def render_all_scenes(
 
     ordered_ids = [s.scene_id for s in target_scenes]
     return [results[sid] for sid in ordered_ids]
+
+def assemble_final_video(
+    project_dir: Path,
+    scene_files: list[Path],
+    out_dir: Path,
+    final_out_path: Path,
+) -> Path:
+    import tempfile
+    
+    concat_only = out_dir / "concat_novoice.mp4"
+    with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as f:
+        for p in scene_files:
+            f.write(f"file '{p.resolve()}'\n")
+        list_path = f.name
+
+    subprocess.run(
+        [FFMPEG_BIN, "-y", "-f", "concat", "-safe", "0", "-i", list_path, "-c", "copy", str(concat_only)],
+        check=True, capture_output=True
+    )
+    Path(list_path).unlink(missing_ok=True)
+
+    bg_music_path = project_dir / "music" / "background.mp3"
+    
+    cmd = [FFMPEG_BIN, "-y", "-i", str(concat_only)]
+    
+    if bg_music_path.exists():
+        cmd.extend(["-stream_loop", "-1", "-i", str(bg_music_path)])
+        filter_complex = "[0:a]volume=1.0[voice];[1:a]volume=0.12[bgm];[voice][bgm]amix=inputs=2:duration=first:dropout_transition=2[aout]"
+        cmd.extend(["-filter_complex", filter_complex, "-map", "0:v", "-map", "[aout]", "-shortest"])
+        cmd.extend(["-c:v", "copy", "-c:a", "aac"])
+    else:
+        cmd.extend(["-c:v", "copy", "-c:a", "copy"])
+        
+    cmd.extend([str(final_out_path)])
+    
+    subprocess.run(cmd, check=True, capture_output=True)
+    concat_only.unlink(missing_ok=True)
+    return final_out_path

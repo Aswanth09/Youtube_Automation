@@ -8,11 +8,18 @@ MusicMood = Literal["corporate_tension", "dark_suspense", "slow_investigation"]
 Speaker = Literal["maya", "jax"]
 
 
+class VisualDirection(BaseModel):
+    camera_motion: str = Field(default="slow push-in", description="slow push-in | aerial orbit | handheld tracking | static macro")
+    graphic_overlay: str = Field(default="none", description="timestamp | redacted document | stat badge | headline ticker | none")
+    screen_fx: str = Field(default="clean grade", description="clean grade | subtle film grain | amber tint | night vision")
+
+
 class Beat(BaseModel):
     beat_id: int = Field(..., ge=1)
     speaker: Speaker
     line: str = Field(...)
     broll_keywords: list[str] = Field(..., min_length=2, max_length=2)
+    visual_direction: VisualDirection = Field(default_factory=VisualDirection)
 
     @field_validator("line")
     @classmethod
