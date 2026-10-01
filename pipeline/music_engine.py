@@ -9,12 +9,12 @@ from contextlib import closing
 from dataclasses import dataclass
 from pathlib import Path
 
-from config import SETTINGS
-from schemas import MusicQuery
+from pipeline.config import SETTINGS
+from pipeline.schemas import MusicQuery
 
 log = logging.getLogger(__name__)
 
-MUSIC_LIBRARY_DIR = Path(__file__).resolve().parent / "assets" / "music_library"
+MUSIC_LIBRARY_DIR = Path(__file__).resolve().parent.parent / "assets" / "music_library"
 DB_PATH = SETTINGS.db_path
 SUPPORTED_AUDIO_SUFFIXES = {".mp3", ".wav", ".m4a", ".aac", ".flac", ".ogg"}
 RECENT_TRACK_LIMIT = 5
@@ -179,7 +179,7 @@ def prepare_project_music(project_dir: Path, mood: str) -> Path:
         except OSError:
             pass
 
-    assets_music = Path(__file__).resolve().parent / "assets" / "music"
+    assets_music = Path(__file__).resolve().parent.parent / "assets" / "music"
     lib_music = project_dir.parent / "_library"
     
     selected_track = None

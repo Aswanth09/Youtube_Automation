@@ -9,14 +9,22 @@ Usage:
 """
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+ROOT_DIR = Path(__file__).resolve().parent
+if (ROOT_DIR / "pipeline").is_dir() and str(ROOT_DIR / "pipeline") not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR / "pipeline"))
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 import argparse
 import logging
 from pathlib import Path
 
-from config import project_paths
-from project_state import ProjectState, SceneAssets
-from tts_engine import generate_scene_audio
-from broll_engine import resolve_all_broll
+from pipeline.config import project_paths
+from pipeline.project_state import ProjectState, SceneAssets
+from pipeline.tts_engine import generate_scene_audio
+from pipeline.broll_engine import resolve_all_broll
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 log = logging.getLogger("02_assets")

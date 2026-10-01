@@ -17,7 +17,7 @@ from pathlib import Path
 import requests
 import imageio_ffmpeg
 
-from config import AUDIO_CHANNELS, INTER_TURN_GAP_MS, SAMPLE_RATE
+from pipeline.config import AUDIO_CHANNELS, INTER_TURN_GAP_MS, SAMPLE_RATE
 
 log = logging.getLogger(__name__)
 

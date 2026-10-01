@@ -37,7 +37,7 @@ VOICE_MAP = {
 }
 DEFAULT_VOICE = os.getenv("TTS_VOICE", "en-US-ChristopherNeural")
 INTER_TURN_GAP_MS = 120
-ASSETS_DIR = Path(__file__).resolve().parent / "assets"
+ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 AVATAR_DIR = ASSETS_DIR / "avatars"
 AVATAR_MAYA_TALKING = ASSETS_DIR / "avatars" / "maya_talking.gif"
 AVATAR_MAYA_IDLE = ASSETS_DIR / "avatars" / "maya_idle.png"

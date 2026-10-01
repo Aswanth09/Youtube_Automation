@@ -9,8 +9,9 @@ from contextlib import closing
 from dataclasses import dataclass
 from pathlib import Path
 
-from config import SETTINGS
-from schemas import MusicQuery
+# pyrefly: ignore [missing-import]
+from pipeline.config import SETTINGS
+from pipeline.schemas import MusicQuery
 
 log = logging.getLogger(__name__)
 

@@ -11,10 +11,13 @@ from PIL import Image
 import imageio_ffmpeg
 import wave
 
+# pyrefly: ignore [missing-import]
 import config
 import render_engine
+# pyrefly: ignore [missing-import]
 import tts_engine
 from assemble import build_master_narration_wav
+# pyrefly: ignore [missing-import]
 from config import AUDIO_CHANNELS, SAMPLE_RATE
 
 

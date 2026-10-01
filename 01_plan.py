@@ -8,14 +8,22 @@ Usage:
 """
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+ROOT_DIR = Path(__file__).resolve().parent
+if (ROOT_DIR / "pipeline").is_dir() and str(ROOT_DIR / "pipeline") not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR / "pipeline"))
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 import argparse
 import json
 import logging
 import re
 
-from config import project_paths
-from gemini_engine import stage1_fact_extraction, stage2_generate_scenes
-from project_state import new_project_state
+from pipeline.config import project_paths
+from pipeline.gemini_engine import stage1_fact_extraction, stage2_generate_scenes
+from pipeline.project_state import new_project_state
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 log = logging.getLogger("01_plan")

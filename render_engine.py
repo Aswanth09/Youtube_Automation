@@ -8,6 +8,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Optional
 
+# pyrefly: ignore [missing-import]
 from config import (
     AUDIO_CHANNELS,
     AVATAR_JAX_IDLE,
