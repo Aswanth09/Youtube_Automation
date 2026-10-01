@@ -31,16 +31,28 @@ def _require(key: str) -> str:
 VALID_MUSIC_MOODS = ("corporate_tension", "dark_suspense", "slow_investigation")
 SAMPLE_RATE = 48000
 AUDIO_CHANNELS = 2
-VOICE_MAP = {"alice": "en-US-JennyNeural", "bob": "en-US-GuyNeural"}
+VOICE_MAP = {
+    "alice": "en-US-JennyNeural",
+    "bob": "en-US-GuyNeural",
+    "maya": "en-US-JennyNeural",
+    "jax": "en-US-GuyNeural",
+}
+DEFAULT_VOICE = os.getenv("TTS_VOICE", "en-US-ChristopherNeural")
 INTER_TURN_GAP_MS = 120
 ASSETS_DIR = Path(__file__).resolve().parent / "assets"
 AVATAR_DIR = ASSETS_DIR / "avatars"
 AVATAR_ALICE = AVATAR_DIR / "alice.gif"
 AVATAR_BOB = AVATAR_DIR / "bob.gif"
+AVATAR_MAYA = AVATAR_DIR / "maya.gif"
+AVATAR_JAX = AVATAR_DIR / "jax.gif"
 AVATAR_ALICE_PNG = AVATAR_DIR / "alice.png"
 AVATAR_BOB_PNG = AVATAR_DIR / "bob.png"
+AVATAR_MAYA_PNG = AVATAR_DIR / "maya.png"
+AVATAR_JAX_PNG = AVATAR_DIR / "jax.png"
 AVATAR_POS_ALICE = (60, 1320)
 AVATAR_POS_BOB = (680, 1200)
+AVATAR_POS_MAYA = (60, 1320)
+AVATAR_POS_JAX = (680, 1200)
 AVATAR_SIZE = 280
 
 
@@ -54,12 +66,27 @@ def ensure_default_avatars() -> tuple[Path, Path]:
         raise RuntimeError("Pillow is required to generate default host avatars") from error
 
     AVATAR_DIR.mkdir(parents=True, exist_ok=True)
+    maya_path = AVATAR_DIR / "maya.gif"
+    jax_path = AVATAR_DIR / "jax.gif"
     avatar_specs = (
+        (maya_path, "maya", (217, 0, 255, 255)),
+        (jax_path, "jax", (0, 212, 255, 255)),
         (AVATAR_ALICE, "alice", (217, 0, 255, 255)),
         (AVATAR_BOB, "bob", (0, 212, 255, 255)),
     )
     image_size = 512
     mouth_shapes = ((0, 0), (18, 10), (30, 28), (18, 10))
+
+    def _prepare_gif_frame(img: Image.Image) -> Image.Image:
+        # Extract alpha mask
+        alpha = img.split()[-1]
+        # Convert to paletted mode
+        p_img = img.convert("RGB").convert("P", palette=Image.Palette.ADAPTIVE, colors=255)
+        # Set transparent pixels (where alpha < 128) to palette index 255
+        mask = Image.eval(alpha, lambda a: 255 if a < 128 else 0)
+        p_img.paste(255, mask)
+        p_img.info["transparency"] = 255
+        return p_img
 
     def draw_character(kind: str, neon: tuple[int, int, int, int], mouth: tuple[int, int]):
         image = Image.new("RGBA", (image_size, image_size), (0, 0, 0, 0))
@@ -72,7 +99,7 @@ def ensure_default_avatars() -> tuple[Path, Path]:
             )
         draw.ellipse((35, 35, 477, 477), fill=(11, 16, 31, 255))
 
-        if kind == "alice":
+        if kind in ("alice", "maya"):
             hair = (54, 28, 95, 255)
             draw.ellipse((104, 68, 408, 430), fill=hair)
             draw.polygon([(120, 190), (95, 405), (160, 440), (184, 205)], fill=hair)
@@ -92,7 +119,7 @@ def ensure_default_avatars() -> tuple[Path, Path]:
         draw.ellipse((204, 202, 218, 218), fill=(17, 20, 32, 255))
         draw.ellipse((296, 202, 310, 218), fill=(17, 20, 32, 255))
 
-        if kind == "alice":
+        if kind in ("alice", "maya"):
             draw.polygon([(135, 176), (153, 92), (238, 72), (212, 138), (180, 158)], fill=hair)
             draw.polygon([(248, 82), (355, 115), (378, 185), (325, 147), (284, 137)], fill=hair)
         else:
@@ -122,18 +149,18 @@ def ensure_default_avatars() -> tuple[Path, Path]:
             continue
         frames = [draw_character(kind, neon, mouth) for mouth in mouth_shapes]
         try:
-            frames[0].save(
+            p_frames = [_prepare_gif_frame(f) for f in frames]
+            p_frames[0].save(
                 gif_path,
                 save_all=True,
-                append_images=frames[1:],
+                append_images=p_frames[1:],
                 duration=120,
                 loop=0,
+                transparency=255,
                 disposal=2,
-                optimize=False,
-                transparency=0,
             )
         except OSError:
-            png_fallback = AVATAR_ALICE_PNG if kind == "alice" else AVATAR_BOB_PNG
+            png_fallback = AVATAR_ALICE_PNG if kind in ("alice", "maya") else AVATAR_BOB_PNG
             if not png_fallback.is_file():
                 raise
 

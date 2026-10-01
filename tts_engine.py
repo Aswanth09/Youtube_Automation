@@ -9,7 +9,7 @@ from pathlib import Path
 import edge_tts
 import imageio_ffmpeg
 
-from config import AUDIO_CHANNELS, SAMPLE_RATE, SETTINGS, VOICE_MAP
+from config import AUDIO_CHANNELS, DEFAULT_VOICE, SAMPLE_RATE, SETTINGS, VOICE_MAP
 
 FFMPEG_BIN = imageio_ffmpeg.get_ffmpeg_exe()
 TICKS_PER_SECOND = 10_000_000
@@ -29,13 +29,13 @@ def _ass_text(text: str) -> str:
 
 def _speaker_ass_style(speaker: str | None) -> str:
     """Map optional speaker labels to dedicated ASS styles."""
-    return {"alice": "Alice", "bob": "Bob"}.get((speaker or "").casefold(), "Default")
+    return {"alice": "Alice", "bob": "Bob", "maya": "Alice", "jax": "Bob"}.get((speaker or "").casefold(), "Default")
 
 
 def _active_word_color(speaker: str | None) -> str:
-    if (speaker or "").casefold() == "alice":
+    if (speaker or "").casefold() in ("alice", "maya"):
         return r"\c&H00D900FF&"
-    if (speaker or "").casefold() == "bob":
+    if (speaker or "").casefold() in ("bob", "jax"):
         return r"\c&H00FFFF00&"
     return r"\c&H0014F0FF&"
 
@@ -179,6 +179,7 @@ def generate_scene_audio(
     narration: str,
     audio_dir: Path,
     speaker: str | None = None,
+    voice: str | None = None,
 ) -> tuple[Path, Path, float]:
     """Synthesize one scene's narration into the given project's audio
     directory and return (PCM WAV path, ASS path, exact sample duration)."""
@@ -186,9 +187,12 @@ def generate_scene_audio(
     raw_path = audio_dir / f"audio_{scene_id:03d}_raw.mp3"
     out_path = audio_dir / f"audio_{scene_id:03d}.wav"
     ass_path = audio_dir / f"subs_{scene_id:03d}.ass"
-    voice = speaker or SETTINGS.tts_voice
+    if speaker:
+        selected_voice = VOICE_MAP.get(speaker.casefold(), DEFAULT_VOICE)
+    else:
+        selected_voice = voice or DEFAULT_VOICE
     try:
-        word_boundaries = asyncio.run(_synthesize(narration, raw_path, voice))
+        word_boundaries = asyncio.run(_synthesize(narration, raw_path, selected_voice))
         total_samples = _decode_pcm_wav(raw_path, out_path)
     finally:
         raw_path.unlink(missing_ok=True)
@@ -203,7 +207,7 @@ def generate_scene_audio(
             clamped_boundaries.append((start, end, word))
         word_boundaries = clamped_boundaries
 
-    speaker_style = _speaker_for_voice(voice)
+    speaker_style = speaker or _speaker_for_voice(selected_voice)
     if speaker_style:
         word_boundaries = [
             (start, end, word, speaker_style)
