@@ -82,11 +82,7 @@ Dialogue: 0,0:00:00.00,0:00:00.40,Default,,0,0,0,,TEST CAPTION
                 (220, 0, 220, 255), (240, 0, 240, 255),
             )]
             frames[0].save(avatar_path, save_all=True, append_images=frames[1:], duration=120, loop=0)
-            beat = SimpleNamespace(
-                beat_id=1,
-                speaker="maya",
-                visual_direction=SimpleNamespace(camera_motion="slow push-in"),
-            )
+            beat = SimpleNamespace(beat_id=1, speaker="maya")
             graph = render_engine.build_beat_filtergraph(beat, 0.4, ass_path)
             graph_path = root / "beat.ffgraph"
             graph_path.write_text(graph, encoding="utf-8")

@@ -71,7 +71,11 @@ TOPIC TITLE / SPECIFIC ANGLE:
 VERIFIED_FACTS:
 {fact_brief}
 
-The script must adapt dynamically across all genres (Trending AI, Military/Geopolitics, True Crime/Heists, Corporate Scandals, Science Anomalies).
+NARRATIVE ARCHETYPE (Choose the best fit for the topic):
+
+* Engine A (Hidden Failure): Overlooked technical/product flaw -> cascading failure -> original decision reframed.
+* Engine B (Corporate Contradiction): Public claims vs. secret reality -> evidence leak -> documented fallout.
+* Engine C (Digital Contagion): Private chat/warning -> network panic -> instantaneous bank run or liquidity drain.
 
 DUAL-HOST FORMAT & ROLES:
 
@@ -79,29 +83,21 @@ DUAL-HOST FORMAT & ROLES:
 * Jax: Calm, authoritative forensic analyst. Delivers exact verified figures, dates, leaked memos, and causal explanations.
 * Alternate speakers on every single turn: Maya, Jax, Maya, Jax... Start with Maya.
 
-Alternating 14-Beat Sequence (Strictly 10–18 words per beat):
+BEAT-BY-BEAT RETENTION STRUCTURE (14 TURNS):
 
-Beat 1 (Maya): The Impossible Hook (Paradox or anomalous event)
-Beat 2 (Jax): The Immediate Complication (Why standard logic failed)
-Beat 3 (Maya): The Context / Origin (Peacetime protocol, promise, or setting)
-Beat 4 (Jax): The Systemic Flaw (Hidden shortcut, blind spot, or corner cut)
-Beat 5 (Maya): The Brewing Anomaly (Internal memo, anomaly, or warning sign)
-Beat 6 (Jax): The Bureaucratic Denial (Dismissal or cover-up attempt)
-Beat 7 (Maya): The Crisis Breach (The failure triggers publicly or escalates)
-Beat 8 (Jax): The Velocity Shock (Rapid reaction in hours, liquidity/tactical crisis)
-Beat 9 (Maya): The Desperate Countermeasure (Frantic patch or public statement)
-Beat 10 (Jax): The Paper Shield Collapses (Evidence disproves official claims)
-Beat 11 (Maya): The Institutional Fallout (Audits, legal clawbacks, or redeployments)
-Beat 12 (Jax): The Ground Zero Reality (Permanent crater or enduring threat)
-Beat 13 (Maya): The Core Indictment (Ambition vs. systemic reality)
-Beat 14 (Jax): The Möbius Loop Reframe (Punchline that circles directly into Beat 1)
+* Beat 1 (Maya): High-tension pattern interrupt hook. MUST address Jax directly by name about the specific premise.
+* Beat 2 (Jax): Opening shock statistic or verified fact. MUST address Maya directly by name.
+* Beats 3-6 (Genesis): Establish the mechanism and the first overlooked red flag.
+* Beats 7-10 (Escalation): Reveal the hidden leak, conflict of interest, or accelerating contagion.
+* Beats 11-12 (Cascade): The irreversible event, peak withdrawal/loss numbers, and regulator seizure.
+* Beat 13 (Maya): Setup for the paradoxical loop ("Jax, then the company didn't collapse when...").
+* Beat 14 (Jax): The punchline reframing Beat 1 so the video loops seamlessly back to the beginning.
 
 CRITICAL CONSTRAINTS:
 
 * Each `line` MUST contain strictly 10-18 words. No rambling, no dead air, no academic lectures.
 * Use 12-14 sequential `beat_id` values (target 14).
 * Never invent figures, memos, or dates not grounded in the facts.
-* Each beat MUST include visual_direction with camera_motion, graphic_overlay, and screen_fx.
 
 CRITICAL B-ROLL SEARCH RULES (Universal Stock Matching):
 Each beat must specify exactly two distinct, concrete visual queries formatted as: `[Physical Subject] + [Action / Environment]` (strictly 2 to 4 words).
@@ -130,20 +126,20 @@ METADATA:
 STAGE2_JSON_EXAMPLE = """
 {
 "beats": [
-{"beat_id": 1, "speaker": "maya", "line": "Wait Jax, did one private message thread really trigger forty-two billion dollars in withdrawals?", "broll_keywords": ["smartphone notification screen", "panicked person holding phone"], "visual_direction": {"camera_motion": "slow push-in", "graphic_overlay": "none", "screen_fx": "clean grade"}},
-{"beat_id": 2, "speaker": "jax", "line": "Maya, once venture capital leaders sent warnings, the digital bank run became completely instantaneous.", "broll_keywords": ["message notification popping up", "venture capital office interior"], "visual_direction": {"camera_motion": "handheld tracking", "graphic_overlay": "stat badge", "screen_fx": "subtle film grain"}},
-{"beat_id": 3, "speaker": "maya", "line": "How did startup founders bring down a two hundred billion dollar bank in hours?", "broll_keywords": ["bank headquarters exterior sign", "graph showing sharp financial decline"], "visual_direction": {"camera_motion": "aerial orbit", "graphic_overlay": "none", "screen_fx": "clean grade"}},
-{"beat_id": 4, "speaker": "jax", "line": "Their growth depended on customer deposits remaining safe while billions sat in long-term bonds.", "broll_keywords": ["bank deposit ledger pages", "interest rate chart moving upwards"], "visual_direction": {"camera_motion": "static macro", "graphic_overlay": "redacted document", "screen_fx": "clean grade"}},
-{"beat_id": 5, "speaker": "maya", "line": "Somebody inside had to notice rising interest rates were crushing those bond investments, right?", "broll_keywords": ["financial audit report highlighted", "empty executive chair boardroom"], "visual_direction": {"camera_motion": "slow push-in", "graphic_overlay": "none", "screen_fx": "amber tint"}},
-{"beat_id": 6, "speaker": "jax", "line": "The bank operated without a chief risk officer for eight months during interest hikes.", "broll_keywords": ["empty office chair", "stock trading dashboard flashing red"], "visual_direction": {"camera_motion": "handheld tracking", "graphic_overlay": "timestamp", "screen_fx": "clean grade"}},
-{"beat_id": 7, "speaker": "maya", "line": "Wait, who actually knew eighty-nine percent of all customer deposits were completely uninsured?", "broll_keywords": ["scrolling through chat messages", "stressed founder looking at laptop"], "visual_direction": {"camera_motion": "slow push-in", "graphic_overlay": "stat badge", "screen_fx": "night vision"}},
-{"beat_id": 8, "speaker": "jax", "line": "Prominent venture funds realized the exposure and advised portfolio companies to withdraw immediately.", "broll_keywords": ["mobile banking withdrawal screen", "hand hitting send on smartphone"], "visual_direction": {"camera_motion": "aerial orbit", "graphic_overlay": "none", "screen_fx": "clean grade"}},
-{"beat_id": 9, "speaker": "maya", "line": "So private screenshots leaked while executives were publicly promising everything was totally fine?", "broll_keywords": ["private founder chat messages", "chaotic crowd of tech employees"], "visual_direction": {"camera_motion": "handheld tracking", "graphic_overlay": "redacted document", "screen_fx": "subtle film grain"}},
-{"beat_id": 10, "speaker": "jax", "line": "Customers withdrew forty-two billion in ten hours, draining one quarter of total deposits.", "broll_keywords": ["cash vault door slamming shut", "empty trading floor after hours"], "visual_direction": {"camera_motion": "static macro", "graphic_overlay": "stat badge", "screen_fx": "clean grade"}},
-{"beat_id": 11, "speaker": "maya", "line": "Forty-two billion gone in ten hours? And leadership couldn't halt the mobile withdrawals?", "broll_keywords": ["panicked trader hands on head", "regulator notice on bank doors"], "visual_direction": {"camera_motion": "slow push-in", "graphic_overlay": "headline ticker", "screen_fx": "amber tint"}},
-{"beat_id": 12, "speaker": "jax", "line": "Regulators seized the insolvent bank within forty-eight hours of their failed capital raise.", "broll_keywords": ["FDIC sign on bank door", "closing office glass doors night"], "visual_direction": {"camera_motion": "handheld tracking", "graphic_overlay": "timestamp", "screen_fx": "clean grade"}},
-{"beat_id": 13, "speaker": "maya", "line": "Jax, then the bank didn't die from bad bonds. It collapsed when...", "broll_keywords": ["smartphone notification screen", "bank headquarters exterior sign"], "visual_direction": {"camera_motion": "slow push-in", "graphic_overlay": "none", "screen_fx": "subtle film grain"}},
-{"beat_id": 14, "speaker": "jax", "line": "...digital group chats turned mutual trust into the fastest bank run in history.", "broll_keywords": ["message notification popping up", "panicked person holding phone"], "visual_direction": {"camera_motion": "aerial orbit", "graphic_overlay": "stat badge", "screen_fx": "clean grade"}}
+{"beat_id": 1, "speaker": "maya", "line": "Wait Jax, did one private message thread really trigger forty-two billion dollars in withdrawals?", "broll_keywords": ["smartphone notification screen", "panicked person holding phone"]},
+{"beat_id": 2, "speaker": "jax", "line": "Maya, once venture capital leaders sent warnings, the digital bank run became completely instantaneous.", "broll_keywords": ["message notification popping up", "venture capital office interior"]},
+{"beat_id": 3, "speaker": "maya", "line": "How did startup founders bring down a two hundred billion dollar bank in hours?", "broll_keywords": ["bank headquarters exterior sign", "graph showing sharp financial decline"]},
+{"beat_id": 4, "speaker": "jax", "line": "Their growth depended on customer deposits remaining safe while billions sat in long-term bonds.", "broll_keywords": ["bank deposit ledger pages", "interest rate chart moving upwards"]},
+{"beat_id": 5, "speaker": "maya", "line": "Somebody inside had to notice rising interest rates were crushing those bond investments, right?", "broll_keywords": ["financial audit report highlighted", "empty executive chair boardroom"]},
+{"beat_id": 6, "speaker": "jax", "line": "The bank operated without a chief risk officer for eight months during interest hikes.", "broll_keywords": ["empty office chair", "stock trading dashboard flashing red"]},
+{"beat_id": 7, "speaker": "maya", "line": "Wait, who actually knew eighty-nine percent of all customer deposits were completely uninsured?", "broll_keywords": ["scrolling through chat messages", "stressed founder looking at laptop"]},
+{"beat_id": 8, "speaker": "jax", "line": "Prominent venture funds realized the exposure and advised portfolio companies to withdraw immediately.", "broll_keywords": ["mobile banking withdrawal screen", "hand hitting send on smartphone"]},
+{"beat_id": 9, "speaker": "maya", "line": "So private screenshots leaked while executives were publicly promising everything was totally fine?", "broll_keywords": ["private founder chat messages", "chaotic crowd of tech employees"]},
+{"beat_id": 10, "speaker": "jax", "line": "Customers withdrew forty-two billion in ten hours, draining one quarter of total deposits.", "broll_keywords": ["cash vault door slamming shut", "empty trading floor after hours"]},
+{"beat_id": 11, "speaker": "maya", "line": "Forty-two billion gone in ten hours? And leadership couldn't halt the mobile withdrawals?", "broll_keywords": ["panicked trader hands on head", "regulator notice on bank doors"]},
+{"beat_id": 12, "speaker": "jax", "line": "Regulators seized the insolvent bank within forty-eight hours of their failed capital raise.", "broll_keywords": ["FDIC sign on bank door", "closing office glass doors night"]},
+{"beat_id": 13, "speaker": "maya", "line": "Jax, then the bank didn't die from bad bonds. It collapsed when...", "broll_keywords": ["smartphone notification screen", "bank headquarters exterior sign"]},
+{"beat_id": 14, "speaker": "jax", "line": "...digital group chats turned mutual trust into the fastest bank run in history.", "broll_keywords": ["message notification popping up", "panicked person holding phone"]}
 ],
 "music": {"mood": "tech_panic", "tempo": "fast"},
 "metadata": {
